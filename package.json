@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "dotenv -e .env -- tinacms dev -c \"vite\"",
     "dev:vite": "vite",
-    "build": "dotenv -e .env -- bash -c \"tinacms build && vite build\"",
+    "build": "tinacms build && vite build",
+    "build:env": "dotenv -e .env -- bash -c \"tinacms build && vite build\"",
     "build:local": "tinacms build --local --skip-cloud-checks --skip-search-index && vite build",
     "preview": "vite preview",
     "migrate-content": "node scripts/migrate-content.mjs",
