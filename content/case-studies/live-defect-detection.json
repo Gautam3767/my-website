@@ -1,0 +1,46 @@
+{
+  "name": "Live Defect Detection — Automotive",
+  "domain": "Computer Vision · Manufacturing AI",
+  "role": "AI Engineer · ML lifecycle owner",
+  "timeline": "2024 — present · Twyn",
+  "type": "Production CV system · live automotive lines",
+  "short": "Real-time computer vision for defect detection on live automotive and manufacturing lines — running at 97–98% accuracy with near-real-time inference. First production deployment shipped within 6 weeks of onboarding.",
+  "problem": "On a two-wheeler assembly line, quality issues were caught downstream — costly to rework, slow to detect, and dependent on operator attention. The team needed a vision system that could match a trained inspector, hold up to plant-grade reliability, and not drown supervisors in false positives.",
+  "opportunity": [
+    "defect classification on live camera feeds",
+    "near-real-time inference inside production tact-time",
+    "object counting for industrial workflows at 99% accuracy",
+    "scalable inference APIs that fit existing plant integration"
+  ],
+  "architecture": [
+    "Line-side camera capture + frame buffer",
+    "Augmentation + pre-processing pipeline",
+    "PyTorch · YOLO · PatchCore models trained per line",
+    "Flask + Docker inference APIs running line-side",
+    "Operator console with accept / dismiss controls",
+    "Feedback channel → labelling queue → retraining"
+  ],
+  "decisions": [
+    "Model selection driven by data availability and labelling constraints, not benchmark accuracy.",
+    "Inference latency budget set by the production tact-time, not by ML convenience.",
+    "Defect taxonomy co-designed with the quality team so every alert mapped to a clear action.",
+    "First production deployment scoped to ship in 6 weeks of onboarding — feature cuts negotiated, not avoided."
+  ],
+  "experience": [
+    "Line-side defect feed with accept / dismiss controls.",
+    "Object-counting view at 99% accuracy for industrial clients.",
+    "Supervisor dashboard tracking daily defect mix and trend.",
+    "Engineering view for model performance per line and SKU."
+  ],
+  "impact": [
+    "97–98% defect detection accuracy on live automotive lines.",
+    "99% accuracy on industrial object counting.",
+    "First production deployment shipped within 6 weeks of onboarding.",
+    "Inference pipelines hardened for plant-grade reliability and latency."
+  ],
+  "reflection": "97% on a live line beats 99% in a notebook. The hardest part isn't the model — it's surviving the floor, the lighting, the operators, and the labelling budget you actually have.",
+  "palette": "#6FE7FF",
+  "motif": "topology",
+  "order": 0,
+  "slug": "live-defect-detection"
+}

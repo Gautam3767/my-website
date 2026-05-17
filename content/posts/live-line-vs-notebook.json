@@ -1,0 +1,121 @@
+{
+  "title": "97% on a live line beats 99% in a notebook.",
+  "dek": "The accuracy you can hold under plant conditions is the only accuracy that matters. A note on what falls off between training set and shop floor.",
+  "kind": "essay",
+  "date": "2026 · 03",
+  "read": "8 min",
+  "tags": [
+    "computer vision",
+    "production ML",
+    "manufacturing AI"
+  ],
+  "featured": false,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A notebook is a controlled environment. A shop floor is not. The same defect-detection model that hit 99% on a clean test set will hit 88% the first time it sees the actual lighting at 6am on a Monday. That gap — the eleven points the slide deck didn’t mention — is where production ML lives."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Where the points go"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Lighting variation across shifts."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Camera drift and lens contamination."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Operators standing in frame."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "New SKUs the model has never seen."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Edge cases that occur once a week but cost real money."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "You don’t close that gap with a better architecture. You close it with line-side feedback, a labelling queue, and a retraining cadence the quality team actually trusts. Models hit a number on a benchmark. Systems hold a number under load."
+          }
+        ]
+      }
+    ]
+  },
+  "slug": "live-line-vs-notebook"
+}

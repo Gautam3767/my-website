@@ -1,0 +1,51 @@
+{
+  "title": "Multimodal isn’t a feature. It’s an honesty filter.",
+  "dek": "Building a consumer health app end-to-end taught me what three disagreeing data sources are really for.",
+  "kind": "essay",
+  "date": "2025 · 12",
+  "read": "7 min",
+  "tags": [
+    "multimodal",
+    "health tech",
+    "product"
+  ],
+  "featured": false,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "I built a multimodal health app as a sole engineer — wearable signals, blood reports, chat history, all ingested into one system that delivered personalised diagnostics and recommendations. The interesting part wasn’t the model architecture. It was what happened when the three sources disagreed."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A wearable said one thing. A blood report said another. The user’s own description of how they felt said a third. That disagreement — inconvenient on a slide — was the most useful signal the system produced. The moment you decide how to weight it, you discover what your product is actually for."
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Multimodal isn’t a feature — it’s an honesty filter."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "slug": "multimodal-honesty"
+}

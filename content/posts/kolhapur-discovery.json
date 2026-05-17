@@ -1,0 +1,46 @@
+{
+  "title": "Field notes: customer discovery in Kolhapur.",
+  "dek": "What a week of on-ground interviews with garment factory owners taught me about every CXO dashboard I’ve since designed.",
+  "kind": "field-note",
+  "date": "2026 · 01",
+  "read": "6 min",
+  "tags": [
+    "product",
+    "operations",
+    "customer discovery"
+  ],
+  "featured": false,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Before FLOOR existed as a platform, it was a notebook. A real one — spiral, scuffed, full of names and phone numbers and four-digit production numbers scribbled at angles. A week of interviews with garment factory owners and floor managers in Kolhapur and Ichalkaranji."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The thing I didn’t expect: CXOs and floor supervisors were operating from completely different versions of the truth, and both knew it. The supervisor knew the line was down. The CXO knew the day’s number would miss. Neither knew what the other one would do about it."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Every CXO dashboard I’ve designed since has been stripped to the four numbers leadership actually used to act — because the other forty don’t change a decision, and a number that doesn’t change a decision is just decoration."
+          }
+        ]
+      }
+    ]
+  },
+  "slug": "kolhapur-discovery"
+}

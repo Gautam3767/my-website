@@ -1,0 +1,44 @@
+{
+  "name": "FLOOR — Factory Operations Platform",
+  "domain": "Industrial Software · Operations Tooling",
+  "role": "Full-stack engineer · Product researcher",
+  "timeline": "2024 · Twyn",
+  "type": "Full-stack platform · shop floor + CXO",
+  "short": "A full-stack factory operations platform — worker-facing shop-floor app and CXO command dashboard — built on top of on-ground research with garment factory owners and floor managers in Kolhapur and Ichalkaranji.",
+  "problem": "Garment factory owners and floor managers were running on whiteboards, WhatsApp threads, and tribal knowledge. Real-time production visibility didn’t exist; CXOs and supervisors operated from completely different versions of the truth.",
+  "opportunity": [
+    "shop-floor app for workers and supervisors",
+    "CXO dashboard with live production state",
+    "field-validated workflows from real factories",
+    "willingness-to-pay tested before a line of code"
+  ],
+  "architecture": [
+    "React + Node.js stack, end-to-end",
+    "REST APIs + real-time data layer",
+    "Worker-facing mobile interface",
+    "Supervisor console + CXO command dashboard",
+    "Auth, role-based views, audit trail"
+  ],
+  "decisions": [
+    "Customer discovery before code — on-ground interviews in Kolhapur and Ichalkaranji.",
+    "Worker-side UX designed for low-friction entry, not feature richness.",
+    "CXO view stripped to the four numbers leadership actually used.",
+    "Architecture scoped so a single engineer could ship and iterate the platform."
+  ],
+  "experience": [
+    "Worker-facing shop-floor interface.",
+    "Supervisor console for line orchestration.",
+    "CXO command dashboard for real-time production visibility.",
+    "Data ingestion pipelines feeding both surfaces."
+  ],
+  "impact": [
+    "Field-validated product hypothesis with real factory owners.",
+    "Working full-stack platform built end-to-end.",
+    "Demonstrable willingness-to-pay signal inside the garment manufacturing segment."
+  ],
+  "reflection": "You can’t design a factory tool from a meeting room. The product lives or dies in the first ten minutes a floor manager actually uses it.",
+  "palette": "#7AA7FF",
+  "motif": "grid",
+  "order": 2,
+  "slug": "floor"
+}

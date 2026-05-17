@@ -1,0 +1,44 @@
+{
+  "name": "Multimodal Health Diagnostics App",
+  "domain": "Health Tech · Multimodal AI",
+  "role": "Sole engineer · end-to-end",
+  "timeline": "2024 · client / startup",
+  "type": "React Native app · production launch",
+  "short": "A multimodal health platform ingesting wearable signals, blood reports, and chat history — processed through a multi-model AI architecture to deliver personalised diagnostics and recommendations. Built and shipped end-to-end as a single engineer.",
+  "problem": "Personal health context was fragmented across wearable apps, lab PDFs, and patient chats. Nothing talked to anything; clinicians and users were both reasoning from a partial picture.",
+  "opportunity": [
+    "unified ingestion across wearables, lab reports, and chat",
+    "multi-model AI for typed reasoning over each modality",
+    "personalised diagnostics + recommendations surface",
+    "full production launch as a single-engineer scope"
+  ],
+  "architecture": [
+    "React Native client (iOS + Android)",
+    "Python backend + model integration",
+    "Multi-model AI architecture across modalities",
+    "Auth, storage, and deployment infrastructure",
+    "End-to-end product launch ownership"
+  ],
+  "decisions": [
+    "Sole-engineer scope demanded brutal cuts to the v1 surface.",
+    "Each modality processed by the model best suited to it — not one general LLM bolted to everything.",
+    "Recommendations always traced back to the input signal that produced them.",
+    "Designed for an actual launch, not a prototype demo."
+  ],
+  "experience": [
+    "Wearable signal ingestion + interpretation.",
+    "Blood report parsing and trend tracking.",
+    "Conversational interface over a user’s full health context.",
+    "Personalised recommendations surface."
+  ],
+  "impact": [
+    "Shipped to production as sole engineer end-to-end.",
+    "Demonstrated multimodal AI in a real consumer health context.",
+    "Validated the full lifecycle — product design, architecture, build, launch — under solo scope."
+  ],
+  "reflection": "Multimodal isn’t a feature — it’s an honesty filter. The moment three sources disagree, you discover what your product is really for.",
+  "palette": "#FFCE7A",
+  "motif": "thermal",
+  "order": 3,
+  "slug": "multimodal-health"
+}

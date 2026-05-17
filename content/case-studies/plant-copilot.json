@@ -1,0 +1,46 @@
+{
+  "name": "Multimodal Plant Copilot",
+  "domain": "Multimodal AI · Industrial Voice + Chat",
+  "role": "AI Engineer · Solutions Architect",
+  "timeline": "2025 — present · Twyn",
+  "type": "Voice + chat AI assistant · 3 enterprise clients",
+  "short": "Voice and chat AI assistants connected to live plant data — answering operational queries, running diagnostics, and surfacing KPIs across three enterprise manufacturing clients. STT, TTS, and LLM reasoning, designed for the floor.",
+  "problem": "Supervisors and plant managers needed answers on throughput, downtime, and quality without learning a dashboard. The existing path — open a tool, find a filter, screenshot a chart — was too slow for the floor and impossible while their hands were full.",
+  "opportunity": [
+    "voice-first query interface for operators on the floor",
+    "natural-language access to live plant KPIs",
+    "LLM reasoning over structured + unstructured plant data",
+    "one architecture deployable across multiple clients"
+  ],
+  "architecture": [
+    "STT layer: Whisper / Deepgram",
+    "TTS layer: ElevenLabs / gTTS",
+    "LLM reasoning + tool-use core",
+    "LangChain agents over plant databases",
+    "Real-time data ingestion → typed query layer",
+    "Voice + chat client surfaces · Slack / web / mobile"
+  ],
+  "decisions": [
+    "Voice and chat run on a single backend — same answers, same audit trail, two front-ends.",
+    "STT/TTS stack tuned per client noise environment; no one-size voice pipeline.",
+    "Strict scoping of which actions an agent can take versus answer-only mode.",
+    "Plant data accessed only through typed tools — never freeform SQL from the LLM."
+  ],
+  "experience": [
+    "Voice copilot for shop-floor supervisors.",
+    "Chat copilot for plant management.",
+    "Live KPI Q&A — “what’s our OEE on line 3 today?”",
+    "Diagnostic flows for downtime and quality incidents."
+  ],
+  "impact": [
+    "Deployed across 3 enterprise manufacturing clients.",
+    "Operational queries answered in seconds, voice or chat.",
+    "Led cross-functional team from requirements through deployment — sprint planning, reviews, direct client communication.",
+    "Architecture reusable across new plants with client-specific tools."
+  ],
+  "reflection": "A voice agent on a factory floor isn’t a chatbot. It’s a steward of trust between an operator and a system that can’t afford to be wrong.",
+  "palette": "#8BFFB1",
+  "motif": "graph",
+  "order": 1,
+  "slug": "plant-copilot"
+}

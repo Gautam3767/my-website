@@ -1,0 +1,139 @@
+{
+  "title": "Shipping production CV in six weeks: what to cut.",
+  "dek": "My first deployment at Twyn went live six weeks after onboarding. The work wasn’t adding features — it was negotiating which ones not to ship.",
+  "kind": "essay",
+  "date": "2026 · 04",
+  "read": "9 min",
+  "tags": [
+    "computer vision",
+    "deployment",
+    "manufacturing AI"
+  ],
+  "featured": true,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The defect-detection system that now runs on a live automotive line at 97–98% accuracy didn’t start that way. It started as a scoping conversation about what could be cut without breaking the product. Six weeks isn’t enough time to build the system you want; it’s enough time to build the smallest system that can survive a shop floor."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The model wasn’t the bottleneck. The bottleneck was data — specifically, the labelling budget. We didn’t have time to build a perfectly balanced dataset across every defect class on the line. So we picked the three classes that mattered most to the quality team, set a higher confidence threshold for everything else, and routed the long-tail to human review."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "What got cut first"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Defect classes that occurred fewer than 20 times per shift."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Any feature that required new hardware on the line."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Any feature that required operators to change their workflow."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Anything that didn’t map cleanly to an action a supervisor could take."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "What didn’t"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Inference latency. Operator trust. Explainability. The boring parts — the parts a recruiter would never ask about — are the ones that decide whether the system is still running six months later."
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Six weeks isn’t a build budget. It’s a discipline."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "slug": "six-week-deploy"
+}

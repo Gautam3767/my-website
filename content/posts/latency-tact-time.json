@@ -1,0 +1,103 @@
+{
+  "title": "Lab note · Latency budgets set by tact-time, not by ML convenience.",
+  "dek": "Five lines that decide whether an inference pipeline survives on a production line.",
+  "kind": "lab-note",
+  "date": "2025 · 11",
+  "read": "4 min",
+  "tags": [
+    "inference",
+    "manufacturing AI",
+    "lab"
+  ],
+  "featured": false,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A short lab note. The inference latency budget is not what the ML team thinks it is. It is what the production tact-time — the time per unit on the line — leaves you, minus capture, minus pre-processing, minus result transport, minus margin."
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Whatever your latency budget is in the proposal, halve it."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Measure end-to-end, not model-only."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Reject any architecture whose 99th percentile blows the budget, even if the mean is fine."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Treat pre-processing as part of the model, not as free."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Plan for the day the line speeds up."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "slug": "latency-tact-time"
+}

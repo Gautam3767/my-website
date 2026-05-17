@@ -1,0 +1,112 @@
+{
+  "title": "A voice agent on a factory floor isn’t a chatbot.",
+  "dek": "Notes from shipping multimodal plant copilots across three enterprise clients. The hard part is everything around the model.",
+  "kind": "field-note",
+  "date": "2026 · 02",
+  "read": "7 min",
+  "tags": [
+    "voice AI",
+    "multimodal",
+    "industrial AI"
+  ],
+  "featured": false,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Multimodal plant copilots sound futuristic until you put one on an actual shop floor. Then they sound noisy, latent, and prone to answering the wrong question. What we shipped across three enterprise clients works — but the wins were almost never in the model."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "What actually mattered"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Picking STT for the noise profile of the specific plant (Whisper held up better in some, Deepgram in others)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Picking TTS for the cadence operators expected, not the most natural-sounding voice."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Strict scoping of what an agent can do versus answer-only mode."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Plant data accessed only through typed tools — never freeform SQL from the LLM."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "A voice agent on a factory floor is a steward of trust. The model is one part of it."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "slug": "voice-agent-floor"
+}
