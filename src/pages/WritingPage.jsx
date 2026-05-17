@@ -6,6 +6,7 @@ import MonoLabel from "../components/MonoLabel.jsx";
 import Footer from "../components/Footer.jsx";
 import Reveal from "../components/Reveal.jsx";
 import RichText from "../components/RichText.jsx";
+import linkifyTwyn from "../utils/linkifyTwyn.jsx";
 import { loadPosts, KIND_META, FILTERS } from "../data/loaders.js";
 
 const ENTRIES = loadPosts();
@@ -428,7 +429,7 @@ function FeaturedEntry({ entry, onOpen }) {
             textWrap: "balance",
           }}
         >
-          {entry.title}
+          {linkifyTwyn(entry.title)}
         </h2>
         <p
           style={{
@@ -440,7 +441,7 @@ function FeaturedEntry({ entry, onOpen }) {
             textWrap: "pretty",
           }}
         >
-          {entry.dek}
+          {linkifyTwyn(entry.dek)}
         </p>
         <div
           style={{
@@ -599,7 +600,7 @@ function EntryRow({ entry, index, onOpen }) {
             textWrap: "balance",
           }}
         >
-          {entry.title}
+          {linkifyTwyn(entry.title)}
         </h3>
       </div>
       <p
@@ -613,7 +614,7 @@ function EntryRow({ entry, index, onOpen }) {
           textWrap: "pretty",
         }}
       >
-        {entry.dek}
+        {linkifyTwyn(entry.dek)}
       </p>
       <div
         className="entry-row-tags"
@@ -814,7 +815,7 @@ function ReadingOverlay({ entry, onClose }) {
               textWrap: "balance",
             }}
           >
-            {entry.title}
+            {linkifyTwyn(entry.title)}
           </h1>
           <p
             style={{
@@ -825,7 +826,7 @@ function ReadingOverlay({ entry, onClose }) {
               textWrap: "pretty",
             }}
           >
-            {entry.dek}
+            {linkifyTwyn(entry.dek)}
           </p>
 
           <div

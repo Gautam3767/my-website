@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import MonoLabel from "./MonoLabel.jsx";
 import { SystemPreviewMotif } from "./Motifs.jsx";
+import linkifyTwyn from "../utils/linkifyTwyn.jsx";
 
 function ListBlock({ items, bullet = "—" }) {
   return (
@@ -35,7 +36,7 @@ function ListBlock({ items, bullet = "—" }) {
           >
             {bullet}
           </span>
-          <span>{it}</span>
+          <span>{linkifyTwyn(it)}</span>
         </li>
       ))}
     </ul>
@@ -71,7 +72,9 @@ function ArchFlow({ items, color }) {
           >
             {String(i + 1).padStart(2, "0")}
           </span>
-          <span style={{ color: "var(--text)", fontSize: 15 }}>{it}</span>
+          <span style={{ color: "var(--text)", fontSize: 15 }}>
+            {linkifyTwyn(it)}
+          </span>
         </div>
       ))}
     </div>
@@ -112,7 +115,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
             textWrap: "pretty",
           }}
         >
-          {s.problem}
+          {linkifyTwyn(s.problem)}
         </p>
       ),
     },
@@ -140,7 +143,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
             letterSpacing: "-0.005em",
           }}
         >
-          “{s.reflection}”
+          “{linkifyTwyn(s.reflection)}”
         </p>
       ),
     },
@@ -261,7 +264,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
               textWrap: "pretty",
             }}
           >
-            {s.short}
+            {linkifyTwyn(s.short)}
           </div>
 
           <div
@@ -302,7 +305,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
                     letterSpacing: "0.02em",
                   }}
                 >
-                  {v}
+                  {linkifyTwyn(v)}
                 </div>
               </div>
             ))}

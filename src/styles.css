@@ -181,6 +181,23 @@ button {
   transform: scaleX(1);
 }
 
+/* Twyn link — inline accent + dashed underline, brightens on hover */
+.twyn-link {
+  color: var(--accent);
+  border-bottom: 1px dashed var(--accent-line);
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+.twyn-link:hover {
+  color: var(--bg-0);
+  background: var(--accent);
+  border-bottom-color: var(--accent);
+  padding: 0 4px 1px;
+  margin: 0 -4px;
+  border-radius: 2px;
+}
+
 /* fade-in on mount (used by overlays and content reveal) */
 @keyframes fadeIn {
   from {

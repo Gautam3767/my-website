@@ -1,12 +1,13 @@
 // Walks Tina's rich-text JSON tree and renders styled JSX that matches
 // the original ReadingOverlay typography.
 import { Fragment } from "react";
+import linkifyTwyn from "../utils/linkifyTwyn.jsx";
 
 function renderInline(node, key) {
   if (!node) return null;
 
   if (node.type === "text") {
-    let el = node.text;
+    let el = linkifyTwyn(node.text);
     if (node.bold) el = <strong key={key} style={{ fontWeight: 600 }}>{el}</strong>;
     if (node.italic) el = <em key={key} style={{ fontStyle: "italic" }}>{el}</em>;
     if (node.code)

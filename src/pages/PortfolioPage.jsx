@@ -18,6 +18,7 @@ import {
   loadPosts,
   KIND_META,
 } from "../data/loaders.js";
+import linkifyTwyn from "../utils/linkifyTwyn.jsx";
 
 const SYSTEMS = loadCaseStudies();
 const SITE = loadSite();
@@ -286,7 +287,7 @@ function Hero({ onJump }) {
               animation: "fadeUp .9s cubic-bezier(0.2,0.7,0.3,1) .1s both",
             }}
           >
-            {subhead}
+            {linkifyTwyn(subhead)}
           </p>
 
           <div
@@ -672,7 +673,7 @@ function SelectedSystems({ onOpen }) {
                     textWrap: "pretty",
                   }}
                 >
-                  {s.short}
+                  {linkifyTwyn(s.short)}
                 </p>
                 <div
                   style={{
@@ -685,9 +686,9 @@ function SelectedSystems({ onOpen }) {
                     letterSpacing: "0.06em",
                   }}
                 >
-                  <span>{s.role}</span>
+                  <span>{linkifyTwyn(s.role)}</span>
                   <span>·</span>
-                  <span>{s.timeline}</span>
+                  <span>{linkifyTwyn(s.timeline)}</span>
                 </div>
               </div>
             </button>
@@ -1421,7 +1422,7 @@ function Philosophy() {
             maxWidth: 620,
           }}
         >
-          {body}
+          {linkifyTwyn(body)}
         </p>
         <div style={{ paddingTop: 8 }}>
           <div
@@ -1445,7 +1446,7 @@ function Philosophy() {
               textWrap: "pretty",
             }}
           >
-            {principles}
+            {linkifyTwyn(principles)}
           </p>
         </div>
       </div>
@@ -1547,7 +1548,7 @@ function About() {
               textWrap: "pretty",
             }}
           >
-            {about.intro}
+            {linkifyTwyn(about.intro)}
           </p>
           <p
             style={{
@@ -1558,7 +1559,7 @@ function About() {
               textWrap: "pretty",
             }}
           >
-            {about.bio}
+            {linkifyTwyn(about.bio)}
           </p>
 
           <div

@@ -26,3 +26,8 @@ dist-ssr
 # TinaCMS generated artifacts (regenerated per build)
 tina/__generated__
 public/admin
+
+# Local env (contains Tina Cloud token)
+.env
+.env.*.local
+.env.local
