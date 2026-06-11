@@ -80,7 +80,7 @@ fresh Cloudflare Pages build.
 ```
 src/
   pages/         PortfolioPage.jsx, WritingPage.jsx
-  components/    TopNav, SystemCube3D, TopologyMesh3D, CaseStudyOverlay,
+  components/    TopNav, SystemCube3D, SystemFlow3D, CaseStudyOverlay,
                  RichText, Reveal, etc.
   data/loaders.js  reads content/*.json via Vite import.meta.glob
 content/

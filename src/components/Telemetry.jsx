@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
 
+// Real readout — local time in New Delhi, where the work happens.
 export default function Telemetry() {
-  const [t, setT] = useState(0);
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
-    const id = setInterval(() => setT((x) => x + 1), 1100);
+    const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(now);
+
   const rows = [
-    ["sys.uptime", "00:14:32:11"],
-    ["sys.region", "ap-south-1 / blr"],
-    ["intel.layer", "operational"],
-    ["loop.feedback", "human-in-loop"],
-    [
-      "pipeline.heartbeat",
-      t % 4 === 0
-        ? "▮▮▯▯"
-        : t % 4 === 1
-        ? "▯▮▮▯"
-        : t % 4 === 2
-        ? "▯▯▮▮"
-        : "▮▯▯▮",
-    ],
+    ["base", "new delhi · in"],
+    ["position", "28.61° N / 77.21° E"],
+    ["local time", `${time} ist`],
+    ["status", "open to roles"],
   ];
 
   return (
@@ -30,26 +29,23 @@ export default function Telemetry() {
       style={{
         fontFamily: "var(--font-mono)",
         fontSize: 10.5,
-        color: "var(--text-3)",
-        letterSpacing: "0.06em",
+        color: "var(--ink-3)",
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
         display: "grid",
-        gap: 6,
+        gap: 7,
         lineHeight: 1.3,
       }}
     >
       {rows.map(([k, v]) => (
         <div
           key={k}
-          style={{
-            display: "flex",
-            gap: 18,
-            justifyContent: "space-between",
-          }}
+          style={{ display: "flex", gap: 18, justifyContent: "space-between" }}
         >
           <span>{k}</span>
           <span
             style={{
-              color: k.endsWith("heartbeat") ? "var(--accent)" : "var(--text-2)",
+              color: k === "status" ? "var(--accent)" : "var(--ink-2)",
             }}
           >
             {v}

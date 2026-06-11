@@ -2,15 +2,14 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Reveal({ children, delay = 0, as: As = "div", style, className = "" }) {
   const ref = useRef(null);
-  const [shown, setShown] = useState(false);
+  const [shown, setShown] = useState(
+    () => typeof IntersectionObserver === "undefined"
+  );
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setShown(true);
-      return;
-    }
+    if (typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {

@@ -1,3 +1,4 @@
+// Faint drafting-paper column rules, fixed behind everything.
 export default function GridOverlay() {
   return (
     <div
@@ -7,15 +8,9 @@ export default function GridOverlay() {
         inset: 0,
         zIndex: 0,
         pointerEvents: "none",
-        backgroundImage: `
-          linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(255,255,255,0.025) 1px, transparent 1px)
-        `,
-        backgroundSize: "80px 80px",
-        maskImage:
-          "radial-gradient(ellipse at center, black 50%, transparent 100%)",
-        WebkitMaskImage:
-          "radial-gradient(ellipse at center, black 50%, transparent 100%)",
+        backgroundImage:
+          "linear-gradient(90deg, rgba(28,26,19,0.04) 1px, transparent 1px)",
+        backgroundSize: "120px 100%",
       }}
     />
   );

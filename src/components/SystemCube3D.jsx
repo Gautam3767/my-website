@@ -167,8 +167,8 @@ export default function SystemCube3D({ ambientMotion = true }) {
           cy={CY + 200}
           rx={a + 40}
           ry={20}
-          fill="rgba(0,0,0,0.55)"
-          opacity="0.6"
+          fill="rgba(28,26,19,0.14)"
+          opacity="0.7"
         />
 
         {edgeOrdered
@@ -212,8 +212,10 @@ export default function SystemCube3D({ ambientMotion = true }) {
             const pts = s.pp
               .map((pt) => `${CX + pt.x},${CY + pt.y}`)
               .join(" ");
-            const fill = s.focal ? "var(--accent-soft)" : "rgba(20,28,38,0.72)";
-            const stroke = s.focal ? "var(--accent-line)" : "var(--border-2)";
+            const fill = s.focal
+              ? "rgba(224,66,12,0.14)"
+              : "rgba(245,242,234,0.82)";
+            const stroke = s.focal ? "var(--accent)" : "var(--border-2)";
             return (
               <g key={"st" + s.idx}>
                 <polygon
@@ -341,9 +343,9 @@ export default function SystemCube3D({ ambientMotion = true }) {
           textTransform: "uppercase",
         }}
       >
-        <span>Obj. 01</span>
-        <span>Intelligence Cube</span>
-        <span style={{ color: "var(--accent)" }}>● rendering</span>
+        <span>Fig. 01</span>
+        <span>The Intelligence Stack</span>
+        <span style={{ color: "var(--accent)" }}>● live</span>
       </div>
       <div
         style={{

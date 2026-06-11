@@ -21,190 +21,197 @@ const WRITING_ITEMS = [
 
 export default function TopNav({ variant = "home", active, onJump }) {
   const [scrolled, setScrolled] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 12);
+    const on = () => {
+      setScrolled(window.scrollY > 12);
+      const max =
+        document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0);
+    };
     on();
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   const items = variant === "writing" ? WRITING_ITEMS : HOME_ITEMS;
 
-  return (
-    <header
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 40,
-        padding: scrolled
-          ? "14px clamp(20px, 5vw, 56px)"
-          : "22px clamp(20px, 5vw, 56px)",
-        transition:
-          "padding .25s ease, background .25s ease, border-color .25s ease",
-        background: scrolled ? "rgba(5,6,8,0.78)" : "transparent",
-        backdropFilter: scrolled ? "blur(14px) saturate(140%)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(14px) saturate(140%)" : "none",
-        borderBottom: scrolled
-          ? "1px solid var(--border)"
-          : "1px solid transparent",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1440,
-          margin: "0 auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 32,
-        }}
-      >
-        <BrandMark variant={variant} onJump={onJump} />
+  const handleJump = (id) => {
+    setMenuOpen(false);
+    onJump?.(id);
+  };
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
-          {items.map((it) =>
-            it.to ? (
+  return (
+    <>
+      <header className={`topnav ${scrolled ? "scrolled" : ""}`}>
+        <div className="topnav-inner">
+          <BrandMark variant={variant} onJump={handleJump} />
+
+          <nav
+            className="nav-desktop"
+            style={{ display: "flex", alignItems: "center", gap: 2 }}
+          >
+            {items.map((it) =>
+              it.to ? (
+                <Link
+                  key={it.label}
+                  to={it.to}
+                  className={`nav-link ${it.active ? "active" : ""}`}
+                >
+                  {it.label}
+                </Link>
+              ) : it.href ? (
+                <Link key={it.label} to={it.href} className="nav-link">
+                  {it.label}
+                </Link>
+              ) : (
+                <button
+                  key={it.id}
+                  onClick={() => handleJump(it.id)}
+                  className={`nav-link ${active === it.id ? "active" : ""}`}
+                >
+                  {it.label}
+                </button>
+              )
+            )}
+
+            {variant === "writing" ? (
               <Link
-                key={it.label}
-                to={it.to}
-                className={`nav-link ${it.active ? "active" : ""}`}
-                style={{
-                  padding: "8px 12px",
-                  fontSize: 13,
-                  letterSpacing: "0.01em",
-                  color: it.active ? "var(--text)" : "var(--text-2)",
-                  borderRadius: 4,
-                }}
+                to="/#contact"
+                className="btn btn--primary"
+                style={{ marginLeft: 14, padding: "10px 16px" }}
               >
-                {it.label}
-              </Link>
-            ) : it.href ? (
-              <Link
-                key={it.label}
-                to={it.href}
-                className="nav-link"
-                style={{
-                  padding: "8px 12px",
-                  fontSize: 13,
-                  letterSpacing: "0.01em",
-                  color: "var(--text-2)",
-                  borderRadius: 4,
-                }}
-              >
-                {it.label}
+                <span>Hire me</span>
               </Link>
             ) : (
               <button
-                key={it.id}
-                onClick={() => onJump?.(it.id)}
-                className={`nav-link ${active === it.id ? "active" : ""}`}
-                style={{
-                  padding: "8px 12px",
-                  fontSize: 13,
-                  letterSpacing: "0.01em",
-                  color: active === it.id ? "var(--text)" : "var(--text-2)",
-                  borderRadius: 4,
-                }}
+                onClick={() => handleJump("contact")}
+                className="btn btn--primary"
+                style={{ marginLeft: 14, padding: "10px 16px" }}
               >
-                {it.label}
+                <span>Hire me</span>
               </button>
-            )
-          )}
+            )}
 
-          {variant === "writing" ? (
-            <Link
-              to="/#contact"
-              className="cta-btn"
-              style={{
-                marginLeft: 12,
-                padding: "9px 14px",
-                fontSize: 12.5,
-                border: "1px solid var(--accent-line)",
-                borderRadius: 4,
-                background: "var(--accent-soft)",
-                color: "var(--text)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                fontFamily: "var(--font-mono)",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
+            <a
+              href="/Gautam_Girdhar_Resume.docx"
+              download
+              className="btn"
+              style={{ marginLeft: 8, padding: "10px 16px" }}
             >
-              <span
-                className="pulse-dot"
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "var(--signal)",
-                  boxShadow: "0 0 8px var(--signal)",
-                }}
-              />
-              <span className="hire-label">Hire me</span>
-            </Link>
-          ) : (
-            <button
-              onClick={() => onJump?.("contact")}
-              className="cta-btn"
-              style={{
-                marginLeft: 12,
-                padding: "9px 14px",
-                fontSize: 12.5,
-                border: "1px solid var(--accent-line)",
-                borderRadius: 4,
-                background: "var(--accent-soft)",
-                color: "var(--text)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                fontFamily: "var(--font-mono)",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              <span
-                className="pulse-dot"
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "var(--signal)",
-                  boxShadow: "0 0 8px var(--signal)",
-                }}
-              />
-              <span className="hire-label">Hire me</span>
-            </button>
-          )}
+              <span className="resume-label">Résumé</span>
+              <span style={{ color: "var(--accent)" }}>↓</span>
+            </a>
+          </nav>
 
-          <a
-            href="/Gautam_Girdhar_Resume.docx"
-            download
-            className="ghost-btn nav-actions-extra"
+          <button
+            className="menu-btn"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            Menu
+            <span
+              style={{ width: 6, height: 6, background: "var(--accent)" }}
+            />
+          </button>
+        </div>
+        <div
+          className="topnav-progress"
+          style={{ width: `${progress * 100}%` }}
+        />
+      </header>
+
+      {menuOpen && (
+        <div className="mobile-menu">
+          <div
             style={{
-              marginLeft: 8,
-              padding: "9px 14px",
-              fontSize: 12.5,
-              border: "1px solid var(--border-2)",
-              borderRadius: 4,
-              display: "inline-flex",
+              display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: 10,
-              fontFamily: "var(--font-mono)",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--text-2)",
+              marginBottom: 36,
             }}
           >
-            <span className="resume-label">Résumé</span>
-            <span style={{ color: "var(--accent)" }}>↓</span>
-          </a>
-        </nav>
-      </div>
-    </header>
+            <BrandMark variant={variant} onJump={handleJump} />
+            <button
+              className="menu-btn"
+              style={{ display: "inline-flex" }}
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+            >
+              Close ✕
+            </button>
+          </div>
+
+          <nav style={{ flex: 1, overflow: "auto" }}>
+            {items.map((it, i) => {
+              const numeral = (
+                <span>{String(i + 1).padStart(2, "0")}</span>
+              );
+              return it.to || it.href ? (
+                <Link
+                  key={it.label}
+                  to={it.to || it.href}
+                  className="mobile-menu-link"
+                  onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex" }}
+                >
+                  {it.label}
+                  {numeral}
+                </Link>
+              ) : (
+                <button
+                  key={it.id}
+                  className="mobile-menu-link"
+                  onClick={() => handleJump(it.id)}
+                >
+                  {it.label}
+                  {numeral}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              marginTop: 28,
+              flexWrap: "wrap",
+            }}
+          >
+            {variant === "writing" ? (
+              <Link
+                to="/#contact"
+                className="btn btn--primary"
+                onClick={() => setMenuOpen(false)}
+              >
+                <span>Hire me</span>
+              </Link>
+            ) : (
+              <button
+                className="btn btn--primary"
+                onClick={() => handleJump("contact")}
+              >
+                <span>Hire me</span>
+              </button>
+            )}
+            <a href="/Gautam_Girdhar_Resume.docx" download className="btn">
+              <span>Résumé</span>
+              <span style={{ color: "var(--accent)" }}>↓</span>
+            </a>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -213,36 +220,33 @@ function BrandMark({ variant, onJump }) {
     <>
       <span
         style={{
-          width: 22,
-          height: 22,
-          borderRadius: 4,
-          border: "1px solid var(--border-2)",
+          width: 24,
+          height: 24,
+          border: "1px solid var(--line-3)",
           display: "grid",
           placeItems: "center",
-          position: "relative",
-          background: "var(--surface-1)",
+          background: "var(--paper-1)",
         }}
       >
         <span
-          style={{
-            width: 6,
-            height: 6,
-            background: "var(--accent)",
-            borderRadius: 1,
-            boxShadow: "0 0 12px var(--accent)",
-          }}
+          style={{ width: 8, height: 8, background: "var(--accent)" }}
         />
       </span>
       <span
         style={{
           fontFamily: "var(--font-mono)",
-          fontSize: 12.5,
-          letterSpacing: "0.04em",
-          color: "var(--text)",
+          fontSize: 12,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "var(--ink)",
+          whiteSpace: "nowrap",
         }}
       >
         Gautam Girdhar
-        <span style={{ color: "var(--text-3)" }}> · AI + Solutions</span>
+        <span className="resume-label" style={{ color: "var(--ink-3)" }}>
+          {" "}
+          · AI + Solutions
+        </span>
       </span>
     </>
   );

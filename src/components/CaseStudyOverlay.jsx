@@ -21,7 +21,7 @@ function ListBlock({ items, bullet = "—" }) {
             display: "grid",
             gridTemplateColumns: "20px 1fr",
             gap: 10,
-            color: "var(--text-2)",
+            color: "var(--ink-2)",
             fontSize: 15.5,
             lineHeight: 1.55,
           }}
@@ -56,9 +56,8 @@ function ArchFlow({ items, color }) {
             gap: 14,
             alignItems: "center",
             padding: "12px 14px",
-            border: "1px solid var(--border)",
-            background: "var(--bg-2)",
-            borderRadius: 2,
+            border: "1px solid var(--line-2)",
+            background: "var(--paper-1)",
           }}
         >
           <span
@@ -72,7 +71,7 @@ function ArchFlow({ items, color }) {
           >
             {String(i + 1).padStart(2, "0")}
           </span>
-          <span style={{ color: "var(--text)", fontSize: 15 }}>
+          <span style={{ color: "var(--ink)", fontSize: 15 }}>
             {linkifyTwyn(it)}
           </span>
         </div>
@@ -109,7 +108,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
         <p
           style={{
             margin: 0,
-            color: "var(--text-2)",
+            color: "var(--ink-2)",
             fontSize: 16,
             lineHeight: 1.65,
             textWrap: "pretty",
@@ -133,14 +132,12 @@ export default function CaseStudyOverlay({ system, onClose }) {
       t: "Reflection",
       c: (
         <p
+          className="t-serif"
           style={{
             margin: 0,
-            color: "var(--text)",
-            fontSize: 18,
-            lineHeight: 1.55,
-            fontFamily: "var(--font-serif)",
-            fontStyle: "italic",
-            letterSpacing: "-0.005em",
+            color: "var(--ink)",
+            fontSize: 21,
+            lineHeight: 1.45,
           }}
         >
           “{linkifyTwyn(s.reflection)}”
@@ -151,17 +148,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 60,
-        background: "rgba(5,6,8,0.86)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        display: "flex",
-        justifyContent: "center",
-        animation: "fadeIn .25s ease",
-      }}
+      className="overlay-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -169,27 +156,16 @@ export default function CaseStudyOverlay({ system, onClose }) {
       <div
         ref={ref}
         onClick={(e) => e.stopPropagation()}
-        className="case-overlay"
+        className="case-overlay overlay-panel"
         style={{
           width: "min(1180px, 96vw)",
           height: "92vh",
           marginTop: "4vh",
-          background: "var(--bg-1)",
-          border: "1px solid var(--border-2)",
-          overflow: "auto",
-          boxShadow: "0 40px 120px rgba(0,0,0,0.5)",
-          animation: "fadeUp .35s cubic-bezier(0.2,0.7,0.3,1)",
         }}
       >
         <div
+          className="overlay-head"
           style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
-            background: "rgba(11,15,20,0.92)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            borderBottom: "1px solid var(--border)",
             padding: "16px 28px",
             display: "flex",
             justifyContent: "space-between",
@@ -197,72 +173,38 @@ export default function CaseStudyOverlay({ system, onClose }) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ width: 9, height: 9, background: s.palette }} />
             <span
-              style={{
-                width: 8,
-                height: 8,
-                background: s.palette,
-                borderRadius: 1,
-                boxShadow: `0 0 10px ${s.palette}`,
-              }}
-            />
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 11.5,
-                color: "var(--text-3)",
-                letterSpacing: "0.12em",
-              }}
+              className="t-label"
+              style={{ letterSpacing: "0.14em", color: "var(--ink-2)" }}
             >
-              CASE STUDY / {s.id.toUpperCase()}
+              Drawing / {s.id}
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="ghost-btn"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-2)",
-              letterSpacing: "0.12em",
-              border: "1px solid var(--border-2)",
-              padding: "8px 12px",
-              borderRadius: 2,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            CLOSE <span style={{ fontSize: 12 }}>ESC</span>
+          <button onClick={onClose} className="stamp">
+            CLOSE <span style={{ color: "var(--accent)" }}>ESC</span>
           </button>
         </div>
 
         <div
           style={{
             padding: "44px 44px 28px",
-            borderBottom: "1px solid var(--border)",
+            borderBottom: "1px solid var(--line)",
           }}
         >
           <MonoLabel>System</MonoLabel>
           <h2
+            className="t-display"
             style={{
-              margin: "16px 0 8px",
-              fontSize: "clamp(36px, 4.4vw, 64px)",
-              fontWeight: 500,
-              letterSpacing: "-0.035em",
-              lineHeight: 1.02,
-              textWrap: "balance",
+              margin: "18px 0 12px",
+              fontSize: "clamp(32px, 4.2vw, 58px)",
             }}
           >
             {s.name}
           </h2>
           <div
-            style={{
-              color: "var(--text-2)",
-              fontSize: 16,
-              maxWidth: 720,
-              textWrap: "pretty",
-            }}
+            className="t-body"
+            style={{ fontSize: 16, maxWidth: 720 }}
           >
             {linkifyTwyn(s.short)}
           </div>
@@ -285,22 +227,18 @@ export default function CaseStudyOverlay({ system, onClose }) {
             ].map(([k, v]) => (
               <div
                 key={k}
-                style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}
+                style={{
+                  borderTop: "1px solid var(--line-2)",
+                  paddingTop: 12,
+                }}
               >
-                <div
-                  style={{
-                    fontSize: 10.5,
-                    color: "var(--text-3)",
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                  }}
-                >
+                <div className="t-label" style={{ fontSize: 9.5 }}>
                   {k}
                 </div>
                 <div
                   style={{
                     marginTop: 6,
-                    color: "var(--text)",
+                    color: "var(--ink)",
                     fontSize: 12.5,
                     letterSpacing: "0.02em",
                   }}
@@ -315,34 +253,28 @@ export default function CaseStudyOverlay({ system, onClose }) {
         <div
           style={{
             height: 280,
-            borderBottom: "1px solid var(--border)",
-            background: "var(--bg-2)",
+            borderBottom: "1px solid var(--line)",
+            background: "var(--paper-2)",
             position: "relative",
             overflow: "hidden",
+            cursor: "crosshair",
           }}
         >
           <SystemPreviewMotif kind={s.motif} color={s.palette} />
+          <div className="plate-caption" style={{ left: 24, bottom: 18 }}>
+            Fig · Abstracted system preview
+          </div>
           <div
-            style={{
-              position: "absolute",
-              left: 24,
-              bottom: 18,
-              fontFamily: "var(--font-mono)",
-              fontSize: 10.5,
-              color: "var(--text-3)",
-              letterSpacing: "0.16em",
-            }}
+            className="plate-caption"
+            style={{ right: 24, top: 16, color: s.palette }}
           >
-            FIG · ABSTRACTED SYSTEM PREVIEW
+            Client work — abstracted
           </div>
         </div>
 
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "200px 1fr",
-            gap: 0,
-          }}
+          className="case-rows"
+          style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 0 }}
         >
           {rows.map((row) => (
             <FragmentRow key={row.k} row={row} />
@@ -352,7 +284,7 @@ export default function CaseStudyOverlay({ system, onClose }) {
         <div
           style={{
             padding: "28px 44px 44px",
-            borderTop: "1px solid var(--border)",
+            borderTop: "1px solid var(--line)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -360,32 +292,9 @@ export default function CaseStudyOverlay({ system, onClose }) {
             flexWrap: "wrap",
           }}
         >
-          <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.12em",
-            }}
-          >
-            END · {s.id.toUpperCase()} / RETURN TO INDEX
-          </div>
-          <button
-            onClick={onClose}
-            className="cta-btn"
-            style={{
-              padding: "12px 18px",
-              border: "1px solid var(--accent-line)",
-              background: "var(--accent-soft)",
-              color: "var(--text)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              borderRadius: 2,
-            }}
-          >
-            ← Back to Systems
+          <div className="t-label">End of drawing · {s.id}</div>
+          <button onClick={onClose} className="btn">
+            <span>← Back to Systems</span>
           </button>
         </div>
       </div>
@@ -397,10 +306,10 @@ function FragmentRow({ row }) {
   return (
     <>
       <div
+        className="case-row-label"
         style={{
           padding: "32px 24px 32px 44px",
-          borderTop: "1px solid var(--border)",
-          background: "var(--bg-1)",
+          borderTop: "1px solid var(--line)",
         }}
       >
         <div
@@ -416,18 +325,23 @@ function FragmentRow({ row }) {
         <div
           style={{
             marginTop: 10,
-            fontSize: 16,
-            letterSpacing: "-0.01em",
-            color: "var(--text)",
+            fontFamily: "var(--font-display)",
+            fontStretch: "112%",
+            fontWeight: 640,
+            textTransform: "uppercase",
+            fontSize: 14.5,
+            letterSpacing: "0.02em",
+            color: "var(--ink)",
           }}
         >
           {row.t}
         </div>
       </div>
       <div
+        className="case-row-content"
         style={{
           padding: "32px 44px 32px 24px",
-          borderTop: "1px solid var(--border)",
+          borderTop: "1px solid var(--line)",
         }}
       >
         {row.c}

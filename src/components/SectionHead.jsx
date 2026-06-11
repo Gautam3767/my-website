@@ -1,43 +1,34 @@
-import MonoLabel from "./MonoLabel.jsx";
-
-export default function SectionHead({ num, kicker, title, lead }) {
+export default function SectionHead({ title, lead, plate = false }) {
   return (
     <div
       className="grid-2-spaced"
       style={{
         display: "grid",
-        gridTemplateColumns: "minmax(0,1fr) minmax(0,1.4fr)",
+        gridTemplateColumns: "minmax(0,1.3fr) minmax(0,1fr)",
         gap: 48,
         alignItems: "end",
-        marginBottom: 56,
+        marginBottom: 64,
       }}
     >
-      <div>
-        <MonoLabel num={num}>{kicker}</MonoLabel>
-        <h2
-          style={{
-            margin: "18px 0 0",
-            fontFamily: "var(--font-sans)",
-            fontWeight: 500,
-            fontSize: "clamp(36px, 4.6vw, 64px)",
-            lineHeight: 1.02,
-            letterSpacing: "-0.035em",
-            color: "var(--text)",
-            textWrap: "balance",
-          }}
-        >
-          {title}
-        </h2>
-      </div>
+      <h2
+        className="t-display"
+        style={{
+          margin: 0,
+          fontSize: "clamp(38px, 5.2vw, 80px)",
+          color: plate ? "var(--plate-text)" : "var(--ink)",
+        }}
+      >
+        {title}
+      </h2>
       {lead && (
         <p
+          className="t-body"
           style={{
             margin: 0,
-            color: "var(--text-2)",
-            fontSize: 17,
-            lineHeight: 1.55,
-            maxWidth: 540,
-            textWrap: "pretty",
+            maxWidth: 520,
+            justifySelf: "end",
+            width: "100%",
+            color: plate ? "var(--plate-text-2)" : "var(--ink-2)",
           }}
         >
           {lead}

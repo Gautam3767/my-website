@@ -39,7 +39,7 @@
     "Architecture reusable across new plants with client-specific tools."
   ],
   "reflection": "A voice agent on a factory floor isn’t a chatbot. It’s a steward of trust between an operator and a system that can’t afford to be wrong.",
-  "palette": "#8BFFB1",
+  "palette": "#1A6B45",
   "motif": "graph",
   "order": 1,
   "slug": "plant-copilot"

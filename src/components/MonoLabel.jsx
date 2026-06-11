@@ -1,12 +1,8 @@
 export default function MonoLabel({ children, num, style }) {
   return (
     <div
+      className="t-label"
       style={{
-        fontFamily: "var(--font-mono)",
-        fontSize: 11,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-        color: "var(--text-3)",
         display: "inline-flex",
         alignItems: "center",
         gap: 10,

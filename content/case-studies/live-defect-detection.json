@@ -39,7 +39,7 @@
     "Inference pipelines hardened for plant-grade reliability and latency."
   ],
   "reflection": "97% on a live line beats 99% in a notebook. The hardest part isn't the model — it's surviving the floor, the lighting, the operators, and the labelling budget you actually have.",
-  "palette": "#6FE7FF",
+  "palette": "#E0420C",
   "motif": "topology",
   "order": 0,
   "slug": "live-defect-detection"

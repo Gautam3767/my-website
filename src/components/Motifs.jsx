@@ -9,7 +9,7 @@ export function SystemPreviewMotif({ kind, color }) {
         height="100%"
         preserveAspectRatio="xMidYMid slice"
       >
-        <g opacity="0.35" stroke="rgba(255,255,255,0.08)">
+        <g opacity="0.35" stroke="rgba(28,26,19,0.10)">
           {Array.from({ length: 10 }).map((_, i) => (
             <line key={"v" + i} x1={i * 32} x2={i * 32} y1={0} y2={200} />
           ))}
@@ -35,7 +35,7 @@ export function SystemPreviewMotif({ kind, color }) {
               y={y - 12}
               width="20"
               height="24"
-              stroke="rgba(255,255,255,0.16)"
+              stroke="rgba(28,26,19,0.22)"
               fill="none"
             />
           </g>
@@ -52,8 +52,8 @@ export function SystemPreviewMotif({ kind, color }) {
           fill="none"
           opacity="0.6"
         />
-        <path d="M100 70 L120 140" stroke="rgba(255,255,255,0.2)" />
-        <path d="M220 80 L200 150" stroke="rgba(255,255,255,0.2)" />
+        <path d="M100 70 L120 140" stroke="rgba(28,26,19,0.25)" />
+        <path d="M220 80 L200 150" stroke="rgba(28,26,19,0.25)" />
       </svg>
     );
   }
@@ -76,7 +76,7 @@ export function SystemPreviewMotif({ kind, color }) {
                 y={20 + r * 22}
                 width="18"
                 height="18"
-                fill={v > 0.6 ? stroke : "rgba(255,255,255,0.06)"}
+                fill={v > 0.6 ? stroke : "rgba(28,26,19,0.07)"}
                 opacity={v > 0.6 ? 0.18 + v * 0.4 : 0.5}
               />
             );
@@ -112,7 +112,7 @@ export function SystemPreviewMotif({ kind, color }) {
             cx="160"
             cy="100"
             r={20 + i * 22}
-            stroke="rgba(255,255,255,0.12)"
+            stroke="rgba(28,26,19,0.16)"
             fill="none"
           />
         ))}
@@ -196,7 +196,7 @@ export function SystemPreviewMotif({ kind, color }) {
             y={y - 6}
             width="22"
             height="12"
-            stroke="rgba(255,255,255,0.18)"
+            stroke="rgba(28,26,19,0.24)"
             fill="none"
           />
         ))}

@@ -57,9 +57,12 @@ export default function WritingPage() {
   const handleOpen = useCallback((id) => setOpenId(id), []);
   const handleClose = useCallback(() => {
     setOpenId(null);
-    // clear the hash so re-opening works
     if (window.location.hash) {
-      history.replaceState(null, "", window.location.pathname + window.location.search);
+      history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search
+      );
     }
   }, []);
 
@@ -71,42 +74,31 @@ export default function WritingPage() {
         <Masthead count={ENTRIES.length} />
         <FilterBar active={filter} onChange={setFilter} counts={counts} />
 
-        <section style={{ padding: "0 clamp(24px, 6vw, 96px) 60px" }}>
-          <div style={{ maxWidth: 1440, margin: "0 auto" }}>
+        <section style={{ padding: "0 var(--pad-x) 60px" }}>
+          <div className="wrap">
             {featured && (
               <Reveal>
                 <FeaturedEntry entry={featured} onOpen={handleOpen} />
               </Reveal>
             )}
-            <div
-              style={{
-                marginTop: 28,
-                border: "1px solid var(--border)",
-                borderBottom: 0,
-              }}
-            >
+            <div style={{ marginTop: 36 }}>
               <div
-                className="entry-row"
+                className="entry-head-row"
                 style={{
                   display: "grid",
                   gridTemplateColumns:
                     "80px minmax(0,1fr) minmax(0,1.2fr) 140px 60px",
                   gap: 28,
-                  padding: "14px 24px",
-                  background: "var(--bg-2)",
-                  borderBottom: "1px solid var(--border)",
-                  pointerEvents: "none",
+                  padding: "12px 20px",
+                  borderBottom: "1px solid var(--line-2)",
                 }}
               >
                 {["№", "Title", "Description", "Tags", "Read"].map((h, i) => (
                   <span
                     key={i}
+                    className="t-label"
                     style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10.5,
-                      color: "var(--text-3)",
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase",
+                      fontSize: 9.5,
                       textAlign: i === 4 ? "right" : "left",
                     }}
                   >
@@ -125,15 +117,15 @@ export default function WritingPage() {
 
         <section
           style={{
-            padding: "80px clamp(24px, 6vw, 96px)",
-            borderTop: "1px solid var(--border)",
-            background: "var(--bg-1)",
+            padding: "80px var(--pad-x)",
+            borderTop: "1px solid var(--line)",
+            background: "var(--paper-1)",
           }}
         >
           <div
             className="grid-2"
             style={{
-              maxWidth: 1440,
+              maxWidth: 1480,
               margin: "0 auto",
               display: "grid",
               gridTemplateColumns: "1fr auto",
@@ -144,39 +136,22 @@ export default function WritingPage() {
             <div>
               <MonoLabel>Subscribe</MonoLabel>
               <h3
+                className="t-display"
                 style={{
-                  margin: "16px 0 0",
-                  fontSize: "clamp(28px, 3.4vw, 44px)",
-                  fontWeight: 500,
-                  letterSpacing: "-0.025em",
-                  lineHeight: 1.1,
-                  textWrap: "balance",
-                  maxWidth: 760,
+                  margin: "18px 0 0",
+                  fontSize: "clamp(26px, 3.2vw, 42px)",
+                  maxWidth: 820,
                 }}
               >
-                Roughly one piece a month, written between deployments.
+                Roughly one piece a month,{" "}
+                <span className="serif" style={{ color: "var(--accent)" }}>
+                  written between deployments.
+                </span>
               </h3>
             </div>
-            <Link
-              to="/#contact"
-              className="cta-btn"
-              style={{
-                padding: "14px 22px",
-                border: "1px solid var(--accent-line)",
-                background: "var(--accent-soft)",
-                color: "var(--text)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                borderRadius: 3,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 14,
-              }}
-            >
-              Subscribe / Get in touch
-              <span style={{ color: "var(--accent)" }}>→</span>
+            <Link to="/#contact" className="btn btn--primary">
+              <span>Subscribe / Get in touch</span>
+              <span className="btn-arrow">→</span>
             </Link>
           </div>
         </section>
@@ -184,20 +159,15 @@ export default function WritingPage() {
         <Footer variant="writing" />
       </div>
 
-      <ReadingOverlay entry={open} onClose={handleClose} />
+      <ReadingOverlay key={open?.id || "closed"} entry={open} onClose={handleClose} />
     </>
   );
 }
 
 function Masthead({ count }) {
   return (
-    <section
-      style={{
-        padding: "160px clamp(24px, 6vw, 96px) 60px",
-        position: "relative",
-      }}
-    >
-      <div style={{ maxWidth: 1440, margin: "0 auto" }}>
+    <section style={{ padding: "160px var(--pad-x) 60px", position: "relative" }}>
+      <div className="wrap">
         <div
           style={{
             display: "flex",
@@ -206,30 +176,27 @@ function Masthead({ count }) {
             marginBottom: 28,
           }}
         >
-          <span
-            style={{ width: 28, height: 1, background: "var(--accent)" }}
-          />
+          <span style={{ width: 30, height: 1, background: "var(--accent)" }} />
           <MonoLabel>Writing · field notes · lab</MonoLabel>
         </div>
-        <h1
-          style={{
-            margin: 0,
-            maxWidth: 1280,
-            fontFamily: "var(--font-sans)",
-            fontWeight: 500,
-            fontSize: "clamp(48px, 7vw, 116px)",
-            lineHeight: 0.96,
-            letterSpacing: "-0.05em",
-            textWrap: "balance",
-            animation: "fadeUp .8s cubic-bezier(0.2,0.7,0.3,1) both",
-          }}
-        >
-          Notes from the <span style={{ color: "var(--accent)" }}>shop floor</span>.
+        <h1 style={{ margin: 0, maxWidth: 1280, fontSize: "clamp(44px, 7vw, 116px)" }}>
+          <span className="hero-line t-display">
+            <span>Notes from</span>
+          </span>
+          <span
+            className="hero-line t-serif"
+            style={{
+              color: "var(--accent)",
+              lineHeight: 1.04,
+            }}
+          >
+            <span>the shop floor.</span>
+          </span>
         </h1>
         <div
           className="grid-2"
           style={{
-            marginTop: 36,
+            marginTop: 40,
             display: "grid",
             gridTemplateColumns: "minmax(0,1.1fr) minmax(0,0.9fr)",
             gap: 56,
@@ -237,25 +204,23 @@ function Masthead({ count }) {
           }}
         >
           <p
+            className="t-body"
             style={{
               margin: 0,
-              color: "var(--text-2)",
-              fontSize: 18,
-              lineHeight: 1.6,
+              fontSize: 17.5,
               maxWidth: 620,
-              textWrap: "pretty",
-              animation: "fadeUp .9s cubic-bezier(0.2,0.7,0.3,1) .1s both",
+              animation: "fadeUp .9s var(--ease) .15s both",
             }}
           >
             Essays, field notes, and lab entries from shipping production AI —
-            computer vision on live automotive lines, multimodal voice
-            copilots in plants, and full-stack ops software. Written between
+            computer vision on live automotive lines, multimodal voice copilots
+            in plants, and full-stack ops software. Written between
             deployments.
           </p>
           <div
             style={{
               display: "flex",
-              gap: 28,
+              gap: 32,
               alignItems: "flex-end",
               justifyContent: "flex-end",
               flexWrap: "wrap",
@@ -264,25 +229,18 @@ function Masthead({ count }) {
             {[
               ["Entries", String(count).padStart(2, "0")],
               ["Updated", "monthly"],
-              ["RSS", "available"],
+              ["Reading", "free"],
             ].map(([k, v]) => (
               <div key={k} style={{ textAlign: "right" }}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10.5,
-                    color: "var(--text-3)",
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                  }}
-                >
+                <div className="t-label" style={{ fontSize: 9.5 }}>
                   {k}
                 </div>
                 <div
                   style={{
                     marginTop: 6,
-                    fontSize: 15,
-                    color: "var(--text)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 14,
+                    color: "var(--ink)",
                   }}
                 >
                   {v}
@@ -300,21 +258,20 @@ function FilterBar({ active, onChange, counts }) {
   return (
     <div
       style={{
-        padding: "0 clamp(24px, 6vw, 96px)",
-        margin: "20px 0 32px",
-        borderTop: "1px solid var(--border)",
-        borderBottom: "1px solid var(--border)",
+        padding: "0 var(--pad-x)",
+        margin: "20px 0 36px",
+        borderTop: "1px solid var(--line)",
+        borderBottom: "1px solid var(--line)",
       }}
     >
       <div
+        className="wrap"
         style={{
-          maxWidth: 1440,
-          margin: "0 auto",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 24,
-          padding: "18px 0",
+          padding: "16px 0",
           flexWrap: "wrap",
         }}
       >
@@ -326,48 +283,22 @@ function FilterBar({ active, onChange, counts }) {
               <button
                 key={f.id}
                 onClick={() => onChange(f.id)}
-                style={{
-                  padding: "8px 14px",
-                  background: isOn ? "var(--accent-soft)" : "transparent",
-                  border: isOn
-                    ? "1px solid var(--accent-line)"
-                    : "1px solid var(--border)",
-                  color: isOn ? "var(--text)" : "var(--text-2)",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11.5,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  borderRadius: 2,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 10,
-                  transition:
-                    "background .2s ease, border-color .2s ease, color .2s ease",
-                }}
+                className={`filter-pill ${isOn ? "on" : ""}`}
               >
                 {f.label}
-                <span
+                <em
                   style={{
-                    color: isOn ? "var(--accent)" : "var(--text-3)",
+                    fontStyle: "normal",
+                    color: isOn ? undefined : "var(--ink-3)",
                   }}
                 >
                   {String(c).padStart(2, "0")}
-                </span>
+                </em>
               </button>
             );
           })}
         </div>
-        <div
-          className="filter-bar-meta"
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            color: "var(--text-3)",
-            letterSpacing: "0.12em",
-          }}
-        >
-          SORTED · NEWEST FIRST
-        </div>
+        <div className="filter-bar-meta t-label">Sorted · newest first</div>
       </div>
     </div>
   );
@@ -383,8 +314,8 @@ function FeaturedEntry({ entry, onOpen }) {
         display: "grid",
         gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr)",
         gap: 0,
-        background: "var(--bg-1)",
-        border: "1px solid var(--border)",
+        background: "var(--paper-1)",
+        border: "1px solid var(--line-2)",
         width: "100%",
         padding: 0,
       }}
@@ -392,54 +323,31 @@ function FeaturedEntry({ entry, onOpen }) {
       <div
         style={{
           padding: "36px 40px 40px",
-          borderRight: "1px solid var(--border)",
+          borderRight: "1px solid var(--line)",
         }}
       >
-        <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-          <span
-            style={{
-              padding: "5px 10px",
-              border: "1px solid var(--accent-line)",
-              color: "var(--accent)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 10.5,
-              letterSpacing: "0.16em",
-            }}
-          >
-            FEATURED · {KIND_META[entry.kind].tag}
+        <div
+          style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}
+        >
+          <span className="stamp stamp--accent">
+            Featured · {KIND_META[entry.kind].tag}
           </span>
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.1em",
-            }}
-          >
+          <span className="t-label" style={{ letterSpacing: "0.1em" }}>
             {entry.date} · {entry.read}
           </span>
         </div>
         <h2
+          className="t-display"
           style={{
-            margin: "24px 0 18px",
-            fontSize: "clamp(34px, 4vw, 56px)",
-            lineHeight: 1.04,
-            letterSpacing: "-0.035em",
-            fontWeight: 500,
-            textWrap: "balance",
+            margin: "26px 0 18px",
+            fontSize: "clamp(30px, 3.6vw, 52px)",
           }}
         >
           {linkifyTwyn(entry.title)}
         </h2>
         <p
-          style={{
-            margin: 0,
-            color: "var(--text-2)",
-            fontSize: 17,
-            lineHeight: 1.55,
-            maxWidth: 600,
-            textWrap: "pretty",
-          }}
+          className="t-body"
+          style={{ margin: 0, fontSize: 16.5, maxWidth: 600 }}
         >
           {linkifyTwyn(entry.dek)}
         </p>
@@ -452,42 +360,33 @@ function FeaturedEntry({ entry, onOpen }) {
           }}
         >
           {entry.tags.map((t) => (
-            <span
-              key={t}
-              style={{
-                padding: "4px 10px",
-                border: "1px solid var(--border)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 10.5,
-                color: "var(--text-2)",
-                letterSpacing: "0.06em",
-              }}
-            >
+            <span key={t} className="stamp" style={{ fontSize: 9.5 }}>
               {t}
             </span>
           ))}
         </div>
       </div>
       <div
+        className="feat-card-side"
         style={{
           padding: "36px 32px 40px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "var(--bg-2)",
+          background: "var(--paper-2)",
+          borderLeft: "1px solid var(--line)",
         }}
       >
         <div>
           <MonoLabel>From the piece</MonoLabel>
           <p
+            className="t-serif"
             style={{
               marginTop: 18,
-              fontFamily: "var(--font-serif)",
-              fontStyle: "italic",
-              fontSize: 26,
+              marginBottom: 0,
+              fontSize: 28,
               lineHeight: 1.25,
-              color: "var(--text)",
-              letterSpacing: "-0.005em",
+              color: "var(--ink)",
               textWrap: "balance",
             }}
           >
@@ -502,15 +401,8 @@ function FeaturedEntry({ entry, onOpen }) {
             alignItems: "center",
           }}
         >
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.12em",
-            }}
-          >
-            EST. READ · {entry.read.toUpperCase()}
+          <span className="t-label" style={{ letterSpacing: "0.12em" }}>
+            Est. read · {entry.read}
           </span>
           <span
             style={{
@@ -538,24 +430,28 @@ function EntryRow({ entry, index, onOpen }) {
         display: "grid",
         gridTemplateColumns: "80px minmax(0,1fr) minmax(0,1.2fr) 140px 60px",
         gap: 28,
-        padding: "28px 24px",
-        borderTop: "1px solid var(--border)",
+        padding: "26px 20px",
+        borderBottom: "1px solid var(--line)",
         width: "100%",
         background: "transparent",
         alignItems: "start",
       }}
     >
-      <div
-        className="entry-row-num"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 11,
-          color: "var(--text-3)",
-          letterSpacing: "0.14em",
-          paddingTop: 4,
-        }}
-      >
-        {String(index).padStart(2, "0")}
+      <div className="entry-row-numcol">
+        <span
+          className="entry-row-num"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontStretch: "116%",
+            fontWeight: 720,
+            fontSize: 30,
+            lineHeight: 1,
+            color: "transparent",
+            WebkitTextStroke: "1px var(--line-3)",
+          }}
+        >
+          {String(index).padStart(2, "0")}
+        </span>
       </div>
       <div>
         <div
@@ -564,39 +460,27 @@ function EntryRow({ entry, index, onOpen }) {
             gap: 10,
             alignItems: "center",
             marginBottom: 10,
+            flexWrap: "wrap",
           }}
         >
-          <span
-            style={{
-              padding: "3px 8px",
-              border: "1px solid var(--border-2)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              color: "var(--text-2)",
-              letterSpacing: "0.16em",
-            }}
-          >
+          <span className="stamp" style={{ fontSize: 9.5 }}>
             {KIND_META[entry.kind].tag}
           </span>
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.08em",
-            }}
-          >
+          <span className="t-label" style={{ letterSpacing: "0.08em" }}>
             {entry.date}
           </span>
         </div>
         <h3
           style={{
             margin: 0,
-            fontSize: 24,
-            fontWeight: 500,
-            letterSpacing: "-0.025em",
+            fontFamily: "var(--font-display)",
+            fontStretch: "112%",
+            fontWeight: 660,
+            textTransform: "uppercase",
+            fontSize: 22,
+            letterSpacing: "-0.005em",
             lineHeight: 1.12,
-            color: "var(--text)",
+            color: "var(--ink)",
             textWrap: "balance",
           }}
         >
@@ -604,15 +488,8 @@ function EntryRow({ entry, index, onOpen }) {
         </h3>
       </div>
       <p
-        className="entry-row-desc"
-        style={{
-          margin: 0,
-          color: "var(--text-2)",
-          fontSize: 15,
-          lineHeight: 1.55,
-          paddingTop: 2,
-          textWrap: "pretty",
-        }}
+        className="entry-row-desc t-body"
+        style={{ margin: 0, fontSize: 14.5, paddingTop: 2 }}
       >
         {linkifyTwyn(entry.dek)}
       </p>
@@ -628,26 +505,16 @@ function EntryRow({ entry, index, onOpen }) {
         {entry.tags.slice(0, 2).map((t) => (
           <span
             key={t}
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 10.5,
-              color: "var(--text-3)",
-              letterSpacing: "0.06em",
-            }}
+            className="t-label"
+            style={{ letterSpacing: "0.06em", textTransform: "none" }}
           >
             · {t}
           </span>
         ))}
       </div>
       <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 11,
-          color: "var(--text-3)",
-          letterSpacing: "0.1em",
-          textAlign: "right",
-          paddingTop: 4,
-        }}
+        className="t-label"
+        style={{ textAlign: "right", paddingTop: 4, letterSpacing: "0.08em" }}
       >
         {entry.read}
       </div>
@@ -667,7 +534,6 @@ function ReadingOverlay({ entry, onClose }) {
     };
     window.addEventListener("keydown", onKey);
     if (ref.current) ref.current.scrollTop = 0;
-    setProgress(0);
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
@@ -684,17 +550,7 @@ function ReadingOverlay({ entry, onClose }) {
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 60,
-        background: "rgba(5,6,8,0.92)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        display: "flex",
-        justifyContent: "center",
-        animation: "fadeIn .25s ease",
-      }}
+      className="overlay-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -703,29 +559,14 @@ function ReadingOverlay({ entry, onClose }) {
         ref={ref}
         onScroll={onScroll}
         onClick={(e) => e.stopPropagation()}
-        className="reading-overlay"
+        className="reading-overlay overlay-panel"
         style={{
           width: "min(960px, 96vw)",
           height: "94vh",
           marginTop: "3vh",
-          background: "var(--bg-1)",
-          border: "1px solid var(--border-2)",
-          overflow: "auto",
-          boxShadow: "0 40px 120px rgba(0,0,0,0.55)",
-          animation: "fadeUp .35s cubic-bezier(0.2,0.7,0.3,1)",
         }}
       >
-        <div
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
-            background: "rgba(11,15,20,0.92)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            borderBottom: "1px solid var(--border)",
-          }}
-        >
+        <div className="overlay-head">
           <div
             style={{
               padding: "14px 32px",
@@ -743,20 +584,10 @@ function ReadingOverlay({ entry, onClose }) {
                 minWidth: 0,
               }}
             >
+              <span style={{ width: 8, height: 8, background: "var(--accent)" }} />
               <span
+                className="t-label"
                 style={{
-                  width: 6,
-                  height: 6,
-                  background: "var(--accent)",
-                  borderRadius: 1,
-                  boxShadow: "0 0 10px var(--accent)",
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  color: "var(--text-3)",
                   letterSpacing: "0.12em",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -766,30 +597,15 @@ function ReadingOverlay({ entry, onClose }) {
                 {KIND_META[entry.kind].tag} · {entry.date} · {entry.read}
               </span>
             </div>
-            <button
-              onClick={onClose}
-              className="ghost-btn"
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                color: "var(--text-2)",
-                letterSpacing: "0.12em",
-                border: "1px solid var(--border-2)",
-                padding: "8px 12px",
-                borderRadius: 2,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              CLOSE <span style={{ fontSize: 12 }}>ESC</span>
+            <button onClick={onClose} className="stamp">
+              CLOSE <span style={{ color: "var(--accent)" }}>ESC</span>
             </button>
           </div>
-          <div style={{ height: 1, background: "var(--border)" }}>
+          <div style={{ height: 2, background: "var(--line)" }}>
             <div
               style={{
                 width: `${progress * 100}%`,
-                height: 1,
+                height: 2,
                 background: "var(--accent)",
                 transition: "width .08s linear",
               }}
@@ -800,31 +616,23 @@ function ReadingOverlay({ entry, onClose }) {
         <article
           style={{
             padding: "56px clamp(28px, 7vw, 96px) 96px",
-            maxWidth: 800,
+            maxWidth: 820,
             margin: "0 auto",
           }}
         >
           <MonoLabel>{KIND_META[entry.kind].label}</MonoLabel>
           <h1
+            className="t-display"
             style={{
-              margin: "20px 0 18px",
-              fontSize: "clamp(34px, 4.6vw, 56px)",
-              fontWeight: 500,
-              letterSpacing: "-0.035em",
-              lineHeight: 1.04,
-              textWrap: "balance",
+              margin: "22px 0 18px",
+              fontSize: "clamp(30px, 4.4vw, 52px)",
             }}
           >
             {linkifyTwyn(entry.title)}
           </h1>
           <p
-            style={{
-              margin: 0,
-              color: "var(--text-2)",
-              fontSize: 18,
-              lineHeight: 1.55,
-              textWrap: "pretty",
-            }}
+            className="t-body"
+            style={{ margin: 0, fontSize: 17.5 }}
           >
             {linkifyTwyn(entry.dek)}
           </p>
@@ -832,20 +640,21 @@ function ReadingOverlay({ entry, onClose }) {
           <div
             style={{
               marginTop: 32,
-              paddingTop: 22,
-              paddingBottom: 22,
-              borderTop: "1px solid var(--border)",
-              borderBottom: "1px solid var(--border)",
+              paddingTop: 20,
+              paddingBottom: 20,
+              borderTop: "1px solid var(--line)",
+              borderBottom: "1px solid var(--line)",
               display: "flex",
-              gap: 28,
-              color: "var(--text-3)",
+              gap: 24,
+              color: "var(--ink-3)",
               fontFamily: "var(--font-mono)",
-              fontSize: 11.5,
+              fontSize: 11,
               letterSpacing: "0.06em",
+              textTransform: "uppercase",
               flexWrap: "wrap",
             }}
           >
-            <span>BY · GAUTAM GIRDHAR</span>
+            <span>By · Gautam Girdhar</span>
             <span>·</span>
             <span>{entry.date}</span>
             <span>·</span>
@@ -865,7 +674,7 @@ function ReadingOverlay({ entry, onClose }) {
             style={{
               marginTop: 64,
               paddingTop: 28,
-              borderTop: "1px solid var(--border)",
+              borderTop: "1px solid var(--line)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -873,32 +682,9 @@ function ReadingOverlay({ entry, onClose }) {
               flexWrap: "wrap",
             }}
           >
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                color: "var(--text-3)",
-                letterSpacing: "0.14em",
-              }}
-            >
-              END · {entry.id.toUpperCase()}
-            </div>
-            <button
-              onClick={onClose}
-              className="cta-btn"
-              style={{
-                padding: "12px 18px",
-                border: "1px solid var(--accent-line)",
-                background: "var(--accent-soft)",
-                color: "var(--text)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                borderRadius: 2,
-              }}
-            >
-              ← Back to Writing
+            <div className="t-label">End · {entry.id}</div>
+            <button onClick={onClose} className="btn">
+              <span>← Back to Writing</span>
             </button>
           </div>
         </article>

@@ -7,7 +7,7 @@ import SectionHead from "../components/SectionHead.jsx";
 import Section from "../components/Section.jsx";
 import Telemetry from "../components/Telemetry.jsx";
 import SystemCube3D from "../components/SystemCube3D.jsx";
-import TopologyMesh3D from "../components/TopologyMesh3D.jsx";
+import SystemFlow3D from "../components/SystemFlow3D.jsx";
 import { ModuleGlyph, SystemPreviewMotif } from "../components/Motifs.jsx";
 import CaseStudyOverlay from "../components/CaseStudyOverlay.jsx";
 import Footer from "../components/Footer.jsx";
@@ -79,23 +79,13 @@ const PROCESS_STEPS = [
     code: "03",
     title: "Design the System Architecture",
     body: "Data inputs, model layer, retrieval layer, automation logic, APIs, UI, and human review — designed as one continuous system.",
-    detail: [
-      "data flow",
-      "model + retrieval",
-      "orchestration",
-      "interfaces + review",
-    ],
+    detail: ["data flow", "model + retrieval", "orchestration", "interfaces + review"],
   },
   {
     code: "04",
     title: "Build the Product Interface",
     body: "Make the AI usable through dashboards, copilots, alerts, and workflows — where the user already works.",
-    detail: [
-      "dashboards",
-      "copilots",
-      "alerting layer",
-      "admin + ops console",
-    ],
+    detail: ["dashboards", "copilots", "alerting layer", "admin + ops console"],
   },
   {
     code: "05",
@@ -130,9 +120,7 @@ export default function PortfolioPage() {
       "about",
       "contact",
     ];
-    const els = ids
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
+    const els = ids.map((id) => document.getElementById(id)).filter(Boolean);
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -193,6 +181,7 @@ export default function PortfolioPage() {
       <div style={{ position: "relative", zIndex: 1 }}>
         <TopNav active={navActive} onJump={jumpTo} />
         <Hero onJump={jumpTo} />
+        <Marquee />
         <WhatIBuild />
         <SelectedSystems onOpen={setOpenSystem} />
         <ObjectStudy />
@@ -205,43 +194,44 @@ export default function PortfolioPage() {
         <Footer />
       </div>
 
-      <CaseStudyOverlay
-        system={system}
-        onClose={() => setOpenSystem(null)}
-      />
+      <CaseStudyOverlay system={system} onClose={() => setOpenSystem(null)} />
     </>
   );
 }
 
 function Hero({ onJump }) {
   const hero = SITE.hero || {};
-  const headline = hero.headline || "End-to-end AI Engineer &";
-  const headlineAccent = hero.headlineAccent || "Solutions Architect";
+  const rawHeadline = hero.headline || "End-to-end AI Engineer &";
+  const rawAccent = hero.headlineAccent || "Solutions Architect";
+  // a trailing "&" reads better leading the serif line than orphaned in caps
+  const endsWithAmp = /\s*&\s*$/.test(rawHeadline);
+  const headline = rawHeadline.replace(/\s*&\s*$/, "");
+  const headlineAccent = endsWithAmp ? `& ${rawAccent}` : rawAccent;
   const kicker = hero.kicker || "AI Engineer · Solutions Architect · End-to-end";
   const subhead = hero.subhead || "";
-  const whatIDo = hero.whatIDo || [];
 
   return (
     <section
       id="hero"
       data-screen-label="hero"
       style={{
-        minHeight: "100vh",
-        padding: "160px clamp(24px, 6vw, 96px) 80px",
+        minHeight: "100svh",
+        padding: "150px var(--pad-x) 96px",
         position: "relative",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
       }}
     >
       <div
-        className="grid-2"
+        className="wrap grid-2"
         style={{
-          maxWidth: 1440,
-          margin: "0 auto",
+          width: "100%",
           display: "grid",
-          gridTemplateColumns: "1.15fr 1fr",
+          gridTemplateColumns: "minmax(0, 1.25fr) minmax(0, 1fr)",
           gap: 56,
           alignItems: "center",
-          minHeight: "72vh",
         }}
       >
         <div>
@@ -250,41 +240,43 @@ function Hero({ onJump }) {
               display: "flex",
               alignItems: "center",
               gap: 14,
-              marginBottom: 28,
+              marginBottom: 30,
+              animation: "fadeIn 1s var(--ease) both",
             }}
           >
-            <span
-              className="hero-eyebrow-rule"
-              style={{ width: 28, height: 1, background: "var(--accent)" }}
-            />
+            <span style={{ width: 30, height: 1, background: "var(--accent)" }} />
             <MonoLabel>{kicker}</MonoLabel>
           </div>
+
           <h1
-            className="hero-headline"
             style={{
               margin: 0,
-              fontFamily: "var(--font-sans)",
-              fontWeight: 500,
-              fontSize: "clamp(44px, 6.4vw, 96px)",
-              lineHeight: 0.98,
-              letterSpacing: "-0.045em",
-              textWrap: "balance",
-              animation: "fadeUp .8s cubic-bezier(0.2,0.7,0.3,1) both",
+              fontSize: "clamp(42px, 5.6vw, 92px)",
             }}
           >
-            {headline}
-            <br />
-            <span style={{ color: "var(--accent)" }}>{headlineAccent}</span>.
+            <span className="hero-line t-display" style={{ lineHeight: 0.95 }}>
+              <span>{headline}</span>
+            </span>
+            <span
+              className="hero-line t-serif"
+              style={{
+                lineHeight: 1.02,
+                color: "var(--accent)",
+                fontSize: "1.02em",
+              }}
+            >
+              <span>{headlineAccent}.</span>
+            </span>
           </h1>
+
           <p
+            className="t-body"
             style={{
-              marginTop: 32,
-              maxWidth: 580,
-              color: "var(--text-2)",
-              fontSize: 18,
-              lineHeight: 1.55,
-              textWrap: "pretty",
-              animation: "fadeUp .9s cubic-bezier(0.2,0.7,0.3,1) .1s both",
+              marginTop: 34,
+              marginBottom: 0,
+              maxWidth: 560,
+              fontSize: 17.5,
+              animation: "fadeUp 0.9s var(--ease) 0.35s both",
             }}
           >
             {linkifyTwyn(subhead)}
@@ -293,125 +285,37 @@ function Hero({ onJump }) {
           <div
             style={{
               display: "flex",
-              gap: 14,
-              marginTop: 40,
+              gap: 12,
+              marginTop: 42,
               flexWrap: "wrap",
-              animation: "fadeUp 1s cubic-bezier(0.2,0.7,0.3,1) .2s both",
+              animation: "fadeUp 1s var(--ease) 0.45s both",
             }}
           >
-            <button
-              onClick={() => onJump("systems")}
-              className="cta-btn"
-              style={{
-                padding: "14px 22px",
-                border: "1px solid var(--accent-line)",
-                background: "var(--accent-soft)",
-                color: "var(--text)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 14,
-                borderRadius: 3,
-              }}
-            >
-              View Selected Systems
-              <span style={{ color: "var(--accent)" }}>→</span>
+            <button onClick={() => onJump("systems")} className="btn btn--primary">
+              <span>View Selected Systems</span>
+              <span className="btn-arrow">→</span>
             </button>
-            <button
-              onClick={() => onJump("process")}
-              className="ghost-btn"
-              style={{
-                padding: "14px 22px",
-                border: "1px solid var(--border-2)",
-                color: "var(--text-2)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                borderRadius: 3,
-              }}
-            >
-              Explore My Process
+            <button onClick={() => onJump("process")} className="btn">
+              <span>Explore My Process</span>
             </button>
-            <Link
-              to="/writing"
-              className="ghost-btn"
-              style={{
-                padding: "14px 22px",
-                border: "1px solid var(--border-2)",
-                color: "var(--text-2)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                borderRadius: 3,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              Notes from the Floor
-              <span style={{ color: "var(--accent)" }}>→</span>
+            <Link to="/writing" className="btn">
+              <span>Notes from the Floor</span>
+              <span className="btn-arrow" style={{ color: "var(--accent)" }}>
+                →
+              </span>
             </Link>
-          </div>
-
-          <div
-            style={{
-              marginTop: 76,
-              paddingTop: 22,
-              borderTop: "1px solid var(--border)",
-              display: "grid",
-              gridTemplateColumns: "auto 1fr",
-              gap: 28,
-              alignItems: "center",
-              animation: "fadeUp 1s cubic-bezier(0.2,0.7,0.3,1) .3s both",
-            }}
-          >
-            <MonoLabel>What I do</MonoLabel>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px 22px",
-                color: "var(--text-2)",
-                fontSize: 13.5,
-              }}
-            >
-              {whatIDo.map((d) => (
-                <span
-                  key={d}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 4,
-                      height: 4,
-                      borderRadius: "50%",
-                      background: "var(--text-3)",
-                    }}
-                  />
-                  {d}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 
         <div
+          className="hero-side"
           style={{
             position: "relative",
             justifySelf: "end",
             width: "100%",
             display: "flex",
             justifyContent: "flex-end",
-            animation: "fadeIn 1.4s cubic-bezier(0.2,0.7,0.3,1) .2s both",
+            animation: "fadeIn 1.6s var(--ease) 0.3s both",
           }}
         >
           <SystemCube3D ambientMotion />
@@ -419,10 +323,11 @@ function Hero({ onJump }) {
       </div>
 
       <div
+        className="hero-meta"
         style={{
           position: "absolute",
-          left: "clamp(24px, 6vw, 96px)",
-          bottom: 28,
+          left: "var(--pad-x)",
+          bottom: 26,
           display: "flex",
           gap: 36,
           alignItems: "center",
@@ -431,17 +336,15 @@ function Hero({ onJump }) {
         <div className="scroll-hint" style={{ display: "inline-flex" }}>
           <MonoLabel>Scroll ↓</MonoLabel>
         </div>
-        <div
-          style={{ width: 80, height: 1, background: "var(--border-2)" }}
-        />
+        <div style={{ width: 80, height: 1, background: "var(--line-2)" }} />
       </div>
       <div
-        className="telemetry-corner"
+        className="hero-meta"
         style={{
           position: "absolute",
-          right: "clamp(24px, 6vw, 96px)",
-          bottom: 28,
-          width: 260,
+          right: "var(--pad-x)",
+          bottom: 26,
+          width: 280,
         }}
       >
         <Telemetry />
@@ -450,12 +353,30 @@ function Hero({ onJump }) {
   );
 }
 
+function Marquee() {
+  const items = SITE.hero?.whatIDo || [];
+  if (!items.length) return null;
+  const track = (
+    <div className="marquee-track" aria-hidden>
+      {[...items, ...items].map((d, i) => (
+        <span key={i} className="marquee-item">
+          {d}
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <div className="marquee" aria-label={items.join(", ")}>
+      {track}
+      {track}
+    </div>
+  );
+}
+
 function WhatIBuild() {
   return (
-    <Section id="build">
+    <Section id="build" num={1} tab="What I Build">
       <SectionHead
-        num={1}
-        kicker="What I Build"
         title="AI systems that ship to production."
         lead="Each card maps to systems shipped in the last two years — not a service line. Real-time CV running on a live automotive floor, voice copilots in three enterprise plants, a full-stack factory ops platform, and a consumer health app shipped end-to-end as a single engineer."
       />
@@ -465,66 +386,48 @@ function WhatIBuild() {
           display: "grid",
           gridTemplateColumns: "repeat(4, minmax(0,1fr))",
           gap: 1,
-          border: "1px solid var(--border)",
-          background: "var(--border)",
+          border: "1px solid var(--line)",
+          background: "var(--line)",
         }}
       >
         {CAPABILITY_CARDS.map((c, i) => (
           <Reveal key={c.code} delay={i * 80}>
-            <div
-              className="cap-card"
-              style={{
-                background: "var(--bg-1)",
-                padding: "32px 28px 32px",
-                minHeight: 360,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                position: "relative",
-                height: "100%",
-              }}
-            >
+            <div className="cap-card">
               <div>
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
+                    alignItems: "flex-start",
                   }}
                 >
-                  <MonoLabel num={c.code}>Module</MonoLabel>
+                  <span className="cap-num">{c.code}</span>
                   <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      background: "var(--accent)",
-                      borderRadius: 1,
-                    }}
+                    style={{ width: 7, height: 7, background: "var(--accent)" }}
                   />
                 </div>
                 <h3
                   style={{
-                    margin: "36px 0 14px",
-                    fontWeight: 500,
-                    fontSize: 22,
-                    letterSpacing: "-0.02em",
+                    margin: "32px 0 14px",
+                    fontFamily: "var(--font-display)",
+                    fontStretch: "112%",
+                    fontWeight: 660,
+                    textTransform: "uppercase",
+                    fontSize: 19,
+                    letterSpacing: "0.005em",
                     lineHeight: 1.15,
                   }}
                 >
                   {c.title}
                 </h3>
                 <p
-                  style={{
-                    margin: 0,
-                    color: "var(--text-2)",
-                    fontSize: 14.5,
-                    lineHeight: 1.55,
-                  }}
+                  className="t-body"
+                  style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}
                 >
                   {c.body}
                 </p>
               </div>
-              <div style={{ marginTop: 28, opacity: 0.9 }}>
+              <div style={{ marginTop: 28, opacity: 0.85 }}>
                 <ModuleGlyph kind={c.glyph} />
               </div>
             </div>
@@ -537,160 +440,49 @@ function WhatIBuild() {
 
 function SelectedSystems({ onOpen }) {
   return (
-    <Section id="systems">
+    <Section id="systems" num={2} tab="Selected Systems">
       <SectionHead
-        num={2}
-        kicker="Selected Systems"
-        title="Four projects I’ve shipped to production."
+        title="Four systems, shipped & running."
         lead="Two from my work at Twyn (described at the level of detail my client agreement allows), and two personal projects shown in full. Real numbers — 97–98% live accuracy, 99% object counting, 3 enterprise clients, 6-week first deploy — are noted where they belong."
       />
-      <div
-        className="grid-2"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0,1fr))",
-          gap: 1,
-          background: "var(--border)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        {SYSTEMS.map((s, i) => (
-          <Reveal key={s.id} delay={(i % 2) * 90}>
-            <button
-              onClick={() => onOpen(s.id)}
-              className="sys-card"
-              style={{
-                textAlign: "left",
-                padding: 0,
-                background: "var(--bg-1)",
-                display: "block",
-                position: "relative",
-                cursor: "pointer",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{
-                  padding: "24px 28px 18px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: 20,
-                }}
-              >
-                <div>
-                  <MonoLabel num={String(i + 1).padStart(2, "0")}>
-                    System
-                  </MonoLabel>
-                  <h3
-                    style={{
-                      margin: "14px 0 6px",
-                      fontWeight: 500,
-                      fontSize: 28,
-                      letterSpacing: "-0.025em",
-                      lineHeight: 1.05,
-                    }}
-                  >
-                    {s.name}
-                  </h3>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 11.5,
-                      color: "var(--text-3)",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {s.domain}
-                  </div>
-                </div>
-                <div
-                  className="sys-card-open"
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    color: "var(--accent)",
-                    border: "1px solid var(--accent-line)",
-                    padding: "6px 10px",
-                    borderRadius: 2,
-                    letterSpacing: "0.12em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  OPEN →
-                </div>
-              </div>
 
-              <div
-                style={{
-                  height: 220,
-                  borderTop: "1px solid var(--border)",
-                  borderBottom: "1px solid var(--border)",
-                  background: "var(--bg-2)",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
+      <div>
+        {SYSTEMS.map((s, i) => (
+          <Reveal key={s.id} delay={40}>
+            <button className="sys-row" onClick={() => onOpen(s.id)}>
+              <span className="sys-num">{String(i + 1).padStart(2, "0")}</span>
+              <span style={{ minWidth: 0 }}>
+                <h3 className="sys-name">{s.name}</h3>
+                <span
+                  className="t-label"
+                  style={{ letterSpacing: "0.1em", color: "var(--ink-3)" }}
+                >
+                  {s.domain} · {linkifyTwyn(s.timeline)}
+                </span>
+              </span>
+              <span
+                className="sys-desc t-body"
+                style={{ fontSize: 14.5, lineHeight: 1.55, paddingRight: 56 }}
               >
+                {linkifyTwyn(s.short)}
+              </span>
+              <span className="sys-fig">
                 <SystemPreviewMotif kind={s.motif} color={s.palette} />
-                <div
-                  style={{
-                    position: "absolute",
-                    left: 16,
-                    top: 14,
-                    display: "flex",
-                    gap: 16,
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10,
-                    color: "var(--text-3)",
-                    letterSpacing: "0.14em",
-                  }}
+                <span
+                  className="plate-caption"
+                  style={{ left: 12, top: 10 }}
                 >
                   <span>FIG.{String(i + 1).padStart(2, "0")}</span>
-                  <span>{s.motif.toUpperCase()}</span>
-                </div>
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 16,
-                    bottom: 14,
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10,
-                    color: "var(--text-3)",
-                    letterSpacing: "0.14em",
-                  }}
+                  <span>{s.motif}</span>
+                </span>
+                <span
+                  className="plate-caption"
+                  style={{ right: 12, bottom: 10, color: s.palette }}
                 >
-                  CONFIDENTIAL · ABSTRACTED
-                </div>
-              </div>
-
-              <div style={{ padding: "22px 28px 28px" }}>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "var(--text-2)",
-                    fontSize: 15,
-                    lineHeight: 1.55,
-                    textWrap: "pretty",
-                  }}
-                >
-                  {linkifyTwyn(s.short)}
-                </p>
-                <div
-                  style={{
-                    marginTop: 22,
-                    display: "flex",
-                    gap: 22,
-                    color: "var(--text-3)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  <span>{linkifyTwyn(s.role)}</span>
-                  <span>·</span>
-                  <span>{linkifyTwyn(s.timeline)}</span>
-                </div>
-              </div>
+                  CLIENT WORK — ABSTRACTED
+                </span>
+              </span>
+              <span className="sys-open">OPEN →</span>
             </button>
           </Reveal>
         ))}
@@ -701,7 +493,7 @@ function SelectedSystems({ onOpen }) {
 
 function ObjectStudy() {
   return (
-    <Section id="object-study" style={{ background: "var(--bg-1)" }}>
+    <Section id="object-study" num={3} tab="Object Study">
       <div
         className="grid-2"
         style={{
@@ -712,32 +504,18 @@ function ObjectStudy() {
         }}
       >
         <div>
-          <MonoLabel num={3}>Object Study</MonoLabel>
           <h2
-            style={{
-              margin: "20px 0 0",
-              fontFamily: "var(--font-sans)",
-              fontWeight: 500,
-              fontSize: "clamp(36px, 4.6vw, 64px)",
-              lineHeight: 1.02,
-              letterSpacing: "-0.035em",
-              textWrap: "balance",
-            }}
+            className="t-display"
+            style={{ margin: 0, fontSize: "clamp(36px, 4.2vw, 62px)" }}
           >
             How I think
             <br />
-            about an <span style={{ color: "var(--accent)" }}>AI system</span>.
+            about{" "}
+            <span className="serif" style={{ color: "var(--blue)" }}>
+              an AI system.
+            </span>
           </h2>
-          <p
-            style={{
-              marginTop: 28,
-              color: "var(--text-2)",
-              fontSize: 16.5,
-              lineHeight: 1.6,
-              maxWidth: 460,
-              textWrap: "pretty",
-            }}
-          >
+          <p className="t-body" style={{ marginTop: 28, maxWidth: 460 }}>
             Most production AI projects break at the seams between layers — not
             inside the model. Before I write code, I map the whole topology:
             where data enters, where it transforms, where the model fits, where
@@ -745,126 +523,44 @@ function ObjectStudy() {
             your cursor to inspect.
           </p>
 
-          <div
-            style={{
-              marginTop: 36,
-              borderTop: "1px solid var(--border)",
-              paddingTop: 22,
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px 28px",
-              }}
-            >
-              {[
-                ["Nodes", "64"],
-                ["Edges", "192"],
-                ["Hubs", "08"],
-                ["Render", "vector · live"],
-                ["Projection", "perspective"],
-                ["Motion", "auto · cursor-react"],
-              ].map(([k, v]) => (
-                <div
-                  key={k}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    borderBottom: "1px dashed var(--border)",
-                    paddingBottom: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10.5,
-                      color: "var(--text-3)",
-                      letterSpacing: "0.12em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {k}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 11,
-                      color: "var(--text)",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    {v}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <dl style={{ margin: "36px 0 0", maxWidth: 420 }}>
+            {[
+              ["Figure", "02 · system flow"],
+              ["Stages", "data → model → human"],
+              ["Return", "feedback · retraining queue"],
+              ["Drawn", "in code · cursor-reactive"],
+            ].map(([k, v]) => (
+              <div key={k} className="spec">
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
-        <div
-          style={{
-            position: "relative",
-            border: "1px solid var(--border)",
-            background:
-              "linear-gradient(180deg, var(--bg-2), var(--bg-1)), repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 60px), repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 60px)",
-            padding: 0,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              left: 16,
-              top: 14,
-              display: "flex",
-              gap: 18,
-              zIndex: 2,
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              color: "var(--text-3)",
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-            }}
-          >
-            <span>Obj. 02</span>
-            <span>Topology Mesh</span>
-            <span style={{ color: "var(--accent)" }}>● live</span>
+        <div className="plate plate--graph">
+          <div className="plate-caption" style={{ left: 16, top: 14 }}>
+            <span>Fig. 02</span>
+            <span>System Flow</span>
+            <span style={{ color: "var(--blue)" }}>● live</span>
           </div>
-          <div
-            style={{
-              position: "absolute",
-              right: 16,
-              top: 14,
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              color: "var(--text-3)",
-              letterSpacing: "0.16em",
-            }}
-          >
-            VIEWPORT · 16:10
+          <div className="plate-caption" style={{ right: 16, top: 14 }}>
+            Projection · 30° tilt
           </div>
 
-          <TopologyMesh3D ambientMotion />
+          <SystemFlow3D ambientMotion accent="var(--blue)" />
 
           <div
+            className="plate-caption"
             style={{
-              position: "absolute",
               left: 16,
               bottom: 14,
               right: 16,
-              display: "flex",
               justifyContent: "space-between",
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              color: "var(--text-3)",
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
             }}
           >
-            <span>k-nearest · k = 3</span>
-            <span>fibonacci lattice</span>
+            <span>closed loop · human-in-the-loop</span>
+            <span>dots ≈ live data</span>
             <span>cursor → tilt</span>
           </div>
         </div>
@@ -875,122 +571,46 @@ function ObjectStudy() {
 
 function Process() {
   return (
-    <Section id="process">
+    <Section id="process" num={4} tab="How I Work">
       <SectionHead
-        num={4}
-        kicker="How I Work"
         title="From messy workflows to intelligent systems."
         lead="I start by mapping how work actually happens — people, processes, data, decisions, bottlenecks. Then I identify where AI creates leverage and engineer the system around it."
       />
 
-      <div style={{ position: "relative", padding: "20px 0 0" }}>
-        <div
-          style={{
-            position: "absolute",
-            left: 18,
-            top: 56,
-            bottom: 24,
-            width: 1,
-            background:
-              "linear-gradient(180deg, transparent, var(--border-2) 8%, var(--border-2) 92%, transparent)",
-          }}
-        />
+      <div>
         {PROCESS_STEPS.map((s, i) => (
-          <Reveal key={s.code} delay={i * 80}>
-            <div
-              className="process-row"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "60px 1fr 1.2fr",
-                gap: 32,
-                padding: "28px 0",
-                borderBottom:
-                  i === PROCESS_STEPS.length - 1
-                    ? "0"
-                    : "1px dashed var(--border)",
-                alignItems: "start",
-              }}
-            >
-              <div style={{ position: "relative" }}>
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 11,
-                    top: 6,
-                    width: 14,
-                    height: 14,
-                    border: "1px solid var(--accent-line)",
-                    background: "var(--bg-0)",
-                    borderRadius: 2,
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 4,
-                      height: 4,
-                      background: "var(--accent)",
-                    }}
-                  />
-                </span>
-                <div
-                  style={{
-                    marginLeft: 36,
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11.5,
-                    color: "var(--accent)",
-                    letterSpacing: "0.12em",
-                  }}
-                >
-                  STEP · {s.code}
-                </div>
-              </div>
+          <Reveal key={s.code} delay={i * 60}>
+            <div className="process-row">
+              <span className="process-num">{s.code}</span>
               <h3
                 style={{
                   margin: 0,
-                  fontWeight: 500,
-                  fontSize: 26,
-                  letterSpacing: "-0.025em",
-                  lineHeight: 1.1,
-                  paddingTop: 2,
+                  fontFamily: "var(--font-display)",
+                  fontStretch: "114%",
+                  fontWeight: 680,
+                  textTransform: "uppercase",
+                  fontSize: "clamp(20px, 2.2vw, 30px)",
+                  letterSpacing: "-0.005em",
+                  lineHeight: 1.05,
+                  paddingTop: 6,
                 }}
               >
                 {s.title}
               </h3>
-              <div>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "var(--text-2)",
-                    fontSize: 15.5,
-                    lineHeight: 1.6,
-                    textWrap: "pretty",
-                  }}
-                >
+              <div className="process-body">
+                <p className="t-body" style={{ margin: 0, fontSize: 15.5 }}>
                   {s.body}
                 </p>
                 <div
                   style={{
                     display: "flex",
                     flexWrap: "wrap",
-                    gap: "6px 10px",
-                    marginTop: 18,
+                    gap: "6px 8px",
+                    marginTop: 16,
                   }}
                 >
                   {s.detail.map((d) => (
-                    <span
-                      key={d}
-                      style={{
-                        padding: "5px 10px",
-                        border: "1px solid var(--border)",
-                        borderRadius: 2,
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--text-2)",
-                        letterSpacing: "0.04em",
-                      }}
-                    >
+                    <span key={d} className="stamp">
                       {d}
                     </span>
                   ))}
@@ -1003,20 +623,21 @@ function Process() {
 
       <div
         style={{
-          marginTop: 64,
-          border: "1px solid var(--border)",
-          padding: "32px 28px",
-          background: "var(--bg-1)",
+          marginTop: 72,
+          border: "1px solid var(--line-2)",
+          padding: "30px 28px 34px",
+          background: "var(--paper-1)",
+          position: "relative",
         }}
       >
-        <MonoLabel>Fig. 02 / System Flow</MonoLabel>
+        <MonoLabel>Fig. 03 / System Flow — continuous loop</MonoLabel>
         <div
           className="grid-4"
           style={{
-            marginTop: 22,
+            marginTop: 24,
             display: "grid",
             gridTemplateColumns: "repeat(6, minmax(0,1fr))",
-            gap: 12,
+            gap: 10,
             alignItems: "center",
           }}
         >
@@ -1031,16 +652,18 @@ function Process() {
             <div
               key={n}
               style={{
-                padding: "18px 14px",
-                border: "1px solid var(--border-2)",
-                background: i === 2 ? "var(--accent-soft)" : "var(--bg-2)",
-                color: i === 2 ? "var(--accent)" : "var(--text)",
+                padding: "16px 12px",
+                border:
+                  i === 2
+                    ? "1px solid var(--accent)"
+                    : "1px solid var(--line-2)",
+                background: i === 2 ? "var(--accent-soft)" : "var(--paper-0)",
+                color: i === 2 ? "var(--accent)" : "var(--ink)",
                 fontFamily: "var(--font-mono)",
-                fontSize: 12,
+                fontSize: 11.5,
                 textAlign: "center",
-                letterSpacing: "0.04em",
-                borderColor:
-                  i === 2 ? "var(--accent-line)" : "var(--border-2)",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
               }}
             >
               {n}
@@ -1049,16 +672,16 @@ function Process() {
         </div>
         <div
           style={{
-            marginTop: 8,
-            color: "var(--text-3)",
+            marginTop: 12,
+            color: "var(--ink-3)",
             fontFamily: "var(--font-mono)",
-            fontSize: 10.5,
-            letterSpacing: "0.16em",
+            fontSize: 10,
+            letterSpacing: "0.2em",
             textAlign: "center",
           }}
         >
-          ←······························· CONTINUOUS LOOP
-          ·······························→
+          ← · · · · · · · · · · · · · · · FEEDBACK RETURNS · · · · · · · · · ·
+          · · · · →
         </div>
       </div>
     </Section>
@@ -1067,130 +690,54 @@ function Process() {
 
 function Capabilities() {
   return (
-    <Section id="capabilities">
+    <Section id="capabilities" num={5} tab="Technical Capabilities">
       <SectionHead
-        num={5}
-        kicker="Technical Capabilities"
-        title="Every tool I work with to ship production AI."
+        title="Every tool I ship production AI with."
         lead="Grouped by where each piece sits in a real system. Solutions architecture sets the strategy. The AI / ML / voice layer builds the intelligence. The product layer ships the interface. The backend carries everything underneath."
       />
 
-      <div
-        style={{
-          border: "1px solid var(--border)",
-          background: "var(--bg-1)",
-        }}
-      >
+      <div>
         {CAPS.map((L, i) => (
-          <Reveal key={L.layer} delay={i * 80}>
-            <div
-              className="caps-row"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "180px 1fr 220px",
-                alignItems: "stretch",
-                borderTop: i === 0 ? "0" : "1px solid var(--border)",
-              }}
-            >
-              <div
-                className="caps-side"
-                style={{
-                  padding: "28px 24px",
-                  borderRight: "1px solid var(--border)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  background: i === 1 ? "var(--surface-1)" : "transparent",
-                }}
-              >
+          <Reveal key={L.layer} delay={i * 60}>
+            <div className="caps-row">
+              <div>
                 <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    color: "var(--accent)",
-                    letterSpacing: "0.16em",
-                  }}
+                  className="t-label"
+                  style={{ color: "var(--accent)", letterSpacing: "0.2em" }}
                 >
-                  {L.layer} · LAYER
+                  Layer · {L.layer}
                 </div>
                 <div
                   style={{
-                    fontSize: 20,
-                    fontWeight: 500,
-                    letterSpacing: "-0.02em",
-                    marginTop: 28,
+                    marginTop: 12,
+                    fontFamily: "var(--font-display)",
+                    fontStretch: "114%",
+                    fontWeight: 680,
+                    textTransform: "uppercase",
+                    fontSize: 22,
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.005em",
                   }}
                 >
                   {L.name}
                 </div>
+                <div
+                  className="t-label"
+                  style={{ marginTop: 14, display: "block" }}
+                >
+                  {String(L.items.length).padStart(2, "0")} entries
+                </div>
               </div>
-              <div
-                style={{
-                  padding: "28px 32px",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "10px 12px",
-                }}
-              >
-                {L.items.map((it) => (
-                  <span
-                    key={it}
-                    style={{
-                      padding: "8px 14px",
-                      border: "1px solid var(--border)",
-                      fontSize: 13.5,
-                      color: "var(--text)",
-                      background: "var(--bg-2)",
-                      borderRadius: 2,
-                      letterSpacing: "-0.005em",
-                      transition: "border-color .2s ease, transform .2s ease",
-                    }}
-                  >
-                    {it}
+              <p className="caps-items">
+                {L.items.map((it, k) => (
+                  <span key={it}>
+                    <b>{it}</b>
+                    {k < L.items.length - 1 && (
+                      <span className="caps-sep">/</span>
+                    )}
                   </span>
                 ))}
-              </div>
-              <div
-                className="caps-side"
-                style={{
-                  borderLeft: "1px solid var(--border)",
-                  padding: "28px 24px",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  color: "var(--text-3)",
-                  letterSpacing: "0.08em",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  background: i === 1 ? "var(--surface-1)" : "transparent",
-                }}
-              >
-                <div>STATUS · ACTIVE</div>
-                <div style={{ color: "var(--text-2)" }}>
-                  {String(L.items.length).padStart(2, "0")} CAPABILITIES
-                </div>
-                <div
-                  style={{
-                    marginTop: "auto",
-                    display: "flex",
-                    gap: 4,
-                  }}
-                >
-                  {Array.from({ length: 8 }).map((_, k) => (
-                    <span
-                      key={k}
-                      style={{
-                        width: 8,
-                        height: 8,
-                        background:
-                          k < 3 + i
-                            ? "var(--accent)"
-                            : "rgba(255,255,255,0.1)",
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
+              </p>
             </div>
           </Reveal>
         ))}
@@ -1201,11 +748,9 @@ function Capabilities() {
 
 function WritingTeaser() {
   return (
-    <Section id="notes">
+    <Section id="notes" num={6} tab="From the Notes">
       <SectionHead
-        num={6}
-        kicker="From the Notes"
-        title="What I’m writing between deployments."
+        title="Written between deployments."
         lead="Essays, field notes, and lab entries from shipping production AI — the longer version of how I think about the work, and a deeper look at what sits behind each case study."
       />
       <div
@@ -1214,79 +759,48 @@ function WritingTeaser() {
           display: "grid",
           gridTemplateColumns: "repeat(3, minmax(0,1fr))",
           gap: 1,
-          border: "1px solid var(--border)",
-          background: "var(--border)",
+          border: "1px solid var(--line)",
+          background: "var(--line)",
         }}
       >
         {RECENT_POSTS.map((n, i) => (
           <Reveal key={n.id} delay={i * 80}>
-            <Link
-              to={`/writing#${n.id}`}
-              className="note-card"
-              style={{
-                background: "var(--bg-1)",
-                padding: "30px 28px 32px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                minHeight: 300,
-                textDecoration: "none",
-                height: "100%",
-              }}
-            >
+            <Link to={`/writing#${n.id}`} className="note-card">
               <div>
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    gap: 10,
                   }}
                 >
-                  <span
-                    style={{
-                      padding: "4px 9px",
-                      border: "1px solid var(--border-2)",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10,
-                      color: "var(--text-2)",
-                      letterSpacing: "0.16em",
-                    }}
-                  >
+                  <span className="stamp">
                     {KIND_META[n.kind]?.tag || String(n.kind || "").toUpperCase()}
                   </span>
                   <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10.5,
-                      color: "var(--text-3)",
-                      letterSpacing: "0.1em",
-                    }}
+                    className="t-label"
+                    style={{ letterSpacing: "0.1em" }}
                   >
                     {n.date} · {n.read}
                   </span>
                 </div>
                 <h3
                   style={{
-                    margin: "28px 0 14px",
-                    fontWeight: 500,
-                    fontSize: 22,
-                    letterSpacing: "-0.022em",
+                    margin: "26px 0 14px",
+                    fontFamily: "var(--font-display)",
+                    fontStretch: "110%",
+                    fontWeight: 650,
+                    fontSize: 21,
+                    letterSpacing: "-0.01em",
                     lineHeight: 1.18,
-                    color: "var(--text)",
+                    color: "var(--ink)",
                     textWrap: "balance",
                   }}
                 >
                   {n.title}
                 </h3>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "var(--text-2)",
-                    fontSize: 14.5,
-                    lineHeight: 1.55,
-                    textWrap: "pretty",
-                  }}
-                >
+                <p className="t-body" style={{ margin: 0, fontSize: 14 }}>
                   {n.dek}
                 </p>
               </div>
@@ -1308,7 +822,7 @@ function WritingTeaser() {
 
       <div
         style={{
-          marginTop: 32,
+          marginTop: 36,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -1316,37 +830,14 @@ function WritingTeaser() {
           flexWrap: "wrap",
         }}
       >
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            color: "var(--text-3)",
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-          }}
-        >
+        <div className="t-label">
           {String(ALL_POSTS.length).padStart(2, "0")} entries · updated monthly
         </div>
-        <Link
-          to="/writing"
-          className="cta-btn"
-          style={{
-            padding: "14px 22px",
-            border: "1px solid var(--accent-line)",
-            background: "var(--accent-soft)",
-            color: "var(--text)",
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            borderRadius: 3,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 14,
-          }}
-        >
-          Read all notes
-          <span style={{ color: "var(--accent)" }}>→</span>
+        <Link to="/writing" className="btn">
+          <span>Read all notes</span>
+          <span className="btn-arrow" style={{ color: "var(--accent)" }}>
+            →
+          </span>
         </Link>
       </div>
     </Section>
@@ -1356,55 +847,50 @@ function WritingTeaser() {
 function Philosophy() {
   const p = SITE.philosophy || {};
   const headline = p.headline || "Anyone can build the demo.";
-  const headlineAccent = p.headlineAccent || "I build what runs on Monday morning.";
+  const headlineAccent =
+    p.headlineAccent || "I build what runs on Monday morning.";
   const body = p.body || "";
   const principles = p.principles || "";
 
   return (
     <Section
       id="philosophy"
-      style={{
-        background: "var(--bg-1)",
-        paddingTop: 168,
-        paddingBottom: 168,
-      }}
+      num={7}
+      tab="Belief"
+      plate
+      style={{ paddingTop: 150, paddingBottom: 150 }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          marginBottom: 18,
-        }}
-      >
-        <span
-          style={{ width: 28, height: 1, background: "var(--accent)" }}
-        />
-        <MonoLabel num={7}>Belief</MonoLabel>
-      </div>
-
       <h2
         style={{
           margin: 0,
-          fontFamily: "var(--font-sans)",
-          fontWeight: 500,
-          fontSize: "clamp(48px, 7.4vw, 128px)",
-          lineHeight: 0.94,
-          letterSpacing: "-0.05em",
-          textWrap: "balance",
           maxWidth: 1320,
-          color: "var(--text)",
+          fontSize: "clamp(44px, 6.6vw, 116px)",
         }}
       >
-        {headline}
-        <br />
-        <span style={{ color: "var(--accent)" }}>{headlineAccent}</span>
+        <span
+          className="t-display"
+          style={{ display: "block", color: "var(--plate-text)" }}
+        >
+          {headline}
+        </span>
+        <span
+          className="t-serif"
+          style={{
+            display: "block",
+            color: "var(--accent)",
+            lineHeight: 1.04,
+            fontSize: "0.92em",
+            marginTop: 10,
+          }}
+        >
+          {headlineAccent}
+        </span>
       </h2>
 
       <div
         className="grid-2"
         style={{
-          marginTop: 56,
+          marginTop: 64,
           display: "grid",
           gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 0.95fr)",
           gap: 80,
@@ -1414,35 +900,29 @@ function Philosophy() {
         <p
           style={{
             margin: 0,
-            color: "var(--text)",
-            fontSize: 22,
-            lineHeight: 1.45,
-            letterSpacing: "-0.012em",
+            color: "var(--plate-text)",
+            fontSize: 21,
+            lineHeight: 1.5,
+            letterSpacing: "-0.01em",
             textWrap: "pretty",
             maxWidth: 620,
           }}
         >
           {linkifyTwyn(body)}
         </p>
-        <div style={{ paddingTop: 8 }}>
+        <div>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              marginBottom: 16,
-            }}
+            className="t-label"
+            style={{ color: "var(--plate-text-2)", marginBottom: 16 }}
           >
             Working principles
           </div>
           <p
             style={{
               margin: 0,
-              color: "var(--text-2)",
+              color: "var(--plate-text-2)",
               fontSize: 15.5,
-              lineHeight: 1.6,
+              lineHeight: 1.65,
               textWrap: "pretty",
             }}
           >
@@ -1454,8 +934,8 @@ function Philosophy() {
       <div
         className="grid-4"
         style={{
-          marginTop: 104,
-          borderTop: "1px solid var(--border)",
+          marginTop: 96,
+          borderTop: "1px solid var(--plate-line)",
           display: "grid",
           gridTemplateColumns: "repeat(4, minmax(0,1fr))",
         }}
@@ -1464,49 +944,35 @@ function Philosophy() {
           <Reveal key={b.code} delay={i * 70}>
             <div
               style={{
-                padding: "32px 28px 36px",
+                padding: "30px 26px 36px",
                 borderRight:
-                  i < 3 ? "1px solid var(--border)" : "none",
+                  i < BELIEFS.length - 1
+                    ? "1px solid var(--plate-line)"
+                    : "none",
                 display: "flex",
                 flexDirection: "column",
-                gap: 28,
-                minHeight: 220,
+                gap: 30,
+                minHeight: 200,
                 height: "100%",
               }}
             >
-              <div
+              <span
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10.5,
+                  color: "var(--accent)",
+                  letterSpacing: "0.2em",
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    color: "var(--accent)",
-                    letterSpacing: "0.18em",
-                  }}
-                >
-                  {"BELIEF · " + b.code}
-                </span>
-                <span
-                  style={{
-                    width: 4,
-                    height: 4,
-                    background: "var(--accent)",
-                    borderRadius: 1,
-                  }}
-                />
-              </div>
+                BELIEF · {b.code}
+              </span>
               <p
                 style={{
                   margin: 0,
-                  fontSize: 20,
-                  lineHeight: 1.25,
-                  color: "var(--text)",
-                  letterSpacing: "-0.018em",
+                  fontSize: 19,
+                  lineHeight: 1.3,
+                  color: "var(--plate-text)",
+                  letterSpacing: "-0.01em",
                   textWrap: "balance",
                 }}
               >
@@ -1523,12 +989,8 @@ function Philosophy() {
 function About() {
   const about = SITE.about || {};
   return (
-    <Section id="about">
-      <SectionHead
-        num={8}
-        kicker="About"
-        title="AI Engineer. Solutions Architect. Systems thinker."
-      />
+    <Section id="about" num={8} tab="About">
+      <SectionHead title="Engineer of record." />
       <div
         className="grid-2"
         style={{
@@ -1544,155 +1006,83 @@ function About() {
               margin: 0,
               fontSize: 18,
               lineHeight: 1.65,
-              color: "var(--text)",
+              color: "var(--ink)",
               textWrap: "pretty",
             }}
           >
             {linkifyTwyn(about.intro)}
           </p>
-          <p
-            style={{
-              marginTop: 22,
-              fontSize: 17,
-              lineHeight: 1.65,
-              color: "var(--text-2)",
-              textWrap: "pretty",
-            }}
-          >
+          <p className="t-body" style={{ marginTop: 22, fontSize: 16.5 }}>
             {linkifyTwyn(about.bio)}
           </p>
 
-          <div
-            style={{
-              marginTop: 48,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 20,
-            }}
-          >
+          <dl style={{ margin: "44px 0 0" }}>
             {[
               ["Focus", about.focus],
               ["Based", about.based],
               ["Working with", about.workingWith],
               ["Status", about.status],
             ].map(([k, v]) => (
-              <div
-                key={k}
-                style={{
-                  borderTop: "1px solid var(--border)",
-                  paddingTop: 14,
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10.5,
-                    color: "var(--text-3)",
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {k}
-                </div>
-                <div
-                  style={{
-                    marginTop: 8,
-                    fontSize: 15.5,
-                    color: "var(--text)",
-                  }}
-                >
-                  {v}
-                </div>
+              <div key={k} className="spec">
+                <dt>{k}</dt>
+                <dd>{v}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
 
-        <div
-          style={{
-            border: "1px solid var(--border)",
-            background: "var(--bg-1)",
-          }}
-        >
+        <div className="plate">
           <div
             style={{
-              aspectRatio: "1 / 1.18",
+              aspectRatio: "1 / 1.15",
               background:
-                "repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 12px), linear-gradient(180deg, var(--surface-1), var(--bg-2))",
+                "repeating-linear-gradient(135deg, rgba(28,26,19,0.03) 0 1px, transparent 1px 12px), var(--paper-2)",
               position: "relative",
               display: "grid",
               placeItems: "center",
             }}
           >
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                color: "var(--text-3)",
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-              }}
-            >
-              [ Portrait placeholder ]
+            <div className="t-label" style={{ letterSpacing: "0.2em" }}>
+              [ Portrait — to follow ]
+            </div>
+            <div className="plate-caption" style={{ left: 14, top: 12 }}>
+              Operator · G.G — 001
             </div>
             <div
+              className="plate-caption"
+              style={{ right: 14, top: 12, color: "var(--accent)" }}
+            >
+              <span className="pulse-dot">●</span> on site
+            </div>
+            <div
+              className="plate-caption"
               style={{
-                position: "absolute",
                 left: 14,
-                top: 14,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--text-3)",
-                letterSpacing: "0.16em",
-              }}
-            >
-              OPERATOR · G.G — 001
-            </div>
-            <div
-              style={{
-                position: "absolute",
+                bottom: 12,
                 right: 14,
-                top: 14,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--accent)",
-                letterSpacing: "0.16em",
-              }}
-            >
-              <span className="pulse-dot">●</span> ONLINE
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                left: 14,
-                bottom: 14,
-                right: 14,
-                display: "flex",
                 justifyContent: "space-between",
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--text-3)",
-                letterSpacing: "0.16em",
               }}
             >
-              <span>FRAME 0014 / 0240</span>
-              <span>ASPECT 1:1.18</span>
+              <span>New Delhi · IN</span>
+              <span>Aspect 1:1.15</span>
             </div>
           </div>
           <div
             style={{
-              borderTop: "1px solid var(--border)",
-              padding: 18,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              borderTop: "1px solid var(--line-2)",
+              padding: "14px 16px",
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
               fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: "var(--text-2)",
-              letterSpacing: "0.06em",
+              fontSize: 10.5,
+              color: "var(--ink-2)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
             }}
           >
-            <div>NAME · GAUTAM GIRDHAR</div>
-            <div style={{ textAlign: "right" }}>ROLE · APPLIED AI / SYS</div>
+            <span>Name · Gautam Girdhar</span>
+            <span>Role · Applied AI / Sys</span>
           </div>
         </div>
       </div>
@@ -1702,24 +1092,12 @@ function About() {
 
 function Contact() {
   const c = SITE.contact || {};
-  const linkedinDisplay = (c.linkedin || "").replace(/^https?:\/\//, "");
-  const githubDisplay = (c.github || "").replace(/^https?:\/\//, "");
-  const cards = [
-    {
-      label: "Email",
-      value: c.email,
-      href: c.email ? `mailto:${c.email}` : "#",
-    },
-    {
-      label: "LinkedIn",
-      value: linkedinDisplay,
-      href: c.linkedin || "#",
-    },
-    {
-      label: "GitHub",
-      value: githubDisplay,
-      href: c.github || "#",
-    },
+  const linkedinDisplay = (c.linkedin || "").replace(/^https?:\/\/(www\.)?/, "");
+  const githubDisplay = (c.github || "").replace(/^https?:\/\/(www\.)?/, "");
+  const rows = [
+    { label: "Email", value: c.email, href: c.email ? `mailto:${c.email}` : "#" },
+    { label: "LinkedIn", value: linkedinDisplay, href: c.linkedin || "#" },
+    { label: "GitHub", value: githubDisplay, href: c.github || "#" },
     {
       label: "Phone",
       value: c.phone,
@@ -1727,60 +1105,43 @@ function Contact() {
     },
   ];
   return (
-    <Section id="contact" style={{ paddingBottom: 96 }}>
-      <MonoLabel num={9}>Contact</MonoLabel>
+    <Section id="contact" num={9} tab="Contact" style={{ paddingBottom: 110 }}>
       <h2
         style={{
-          margin: "22px 0 0",
-          maxWidth: 1200,
-          fontFamily: "var(--font-sans)",
-          fontWeight: 500,
-          fontSize: "clamp(40px, 6vw, 96px)",
-          lineHeight: 0.98,
-          letterSpacing: "-0.04em",
-          textWrap: "balance",
+          margin: 0,
+          maxWidth: 1240,
+          fontSize: "clamp(42px, 6.6vw, 110px)",
         }}
       >
-        Let’s build intelligent systems
-        <br />
-        that actually <span style={{ color: "var(--accent)" }}>work</span>.
+        <span className="t-display" style={{ display: "block" }}>
+          Let’s build systems
+        </span>
+        <span
+          className="t-serif"
+          style={{
+            display: "block",
+            color: "var(--accent)",
+            fontSize: "0.94em",
+            lineHeight: 1.05,
+            marginTop: 8,
+          }}
+        >
+          that actually work.
+        </span>
       </h2>
 
-      <div
-        className="grid-4"
-        style={{
-          marginTop: 56,
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0,1fr))",
-          gap: 1,
-          background: "var(--border)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        {cards.map((c) => (
+      <div style={{ marginTop: 64 }}>
+        {rows.map((r) => (
           <a
-            key={c.label}
-            href={c.href}
-            className="contact-card"
-            style={{
-              background: "var(--bg-1)",
-              padding: "28px 24px 32px",
-              minHeight: 160,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
+            key={r.label}
+            href={r.href}
+            className="contact-row"
+            target={r.href.startsWith("http") ? "_blank" : undefined}
+            rel={r.href.startsWith("http") ? "noreferrer" : undefined}
           >
-            <MonoLabel>{c.label}</MonoLabel>
-            <div
-              style={{
-                fontSize: 18,
-                letterSpacing: "-0.01em",
-                wordBreak: "break-word",
-              }}
-            >
-              {c.value}
-            </div>
+            <span className="t-label contact-label">{r.label}</span>
+            <span className="contact-value">{r.value}</span>
+            <span className="contact-arrow">↗</span>
           </a>
         ))}
       </div>
