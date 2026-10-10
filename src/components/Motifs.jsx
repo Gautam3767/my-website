@@ -1,14 +1,23 @@
-export function SystemPreviewMotif({ kind, color }) {
+import { useId } from "react";
+
+// Decorative drawings — always aria-hidden; the surrounding copy carries
+// the meaning. `fit="meet"` shows the whole drawing (dialog header);
+// the default "slice" fills a thumbnail edge to edge.
+export function SystemPreviewMotif({ kind, color, fit = "slice" }) {
   const stroke = color || "var(--accent)";
+  const gid = "th" + useId().replace(/[^a-zA-Z0-9]/g, "");
+  const svgProps = {
+    viewBox: "0 0 320 200",
+    width: "100%",
+    height: "100%",
+    preserveAspectRatio: `xMidYMid ${fit}`,
+    "aria-hidden": true,
+    focusable: "false",
+  };
 
   if (kind === "topology") {
     return (
-      <svg
-        viewBox="0 0 320 200"
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-      >
+      <svg {...svgProps}>
         <g opacity="0.35" stroke="rgba(28,26,19,0.10)">
           {Array.from({ length: 10 }).map((_, i) => (
             <line key={"v" + i} x1={i * 32} x2={i * 32} y1={0} y2={200} />
@@ -60,12 +69,7 @@ export function SystemPreviewMotif({ kind, color }) {
 
   if (kind === "grid") {
     return (
-      <svg
-        viewBox="0 0 320 200"
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-      >
+      <svg {...svgProps}>
         {Array.from({ length: 8 }).map((_, r) =>
           Array.from({ length: 14 }).map((_, c) => {
             const v = ((r * 13 + c * 7) % 11) / 11;
@@ -76,8 +80,8 @@ export function SystemPreviewMotif({ kind, color }) {
                 y={20 + r * 22}
                 width="18"
                 height="18"
-                fill={v > 0.6 ? stroke : "rgba(28,26,19,0.07)"}
-                opacity={v > 0.6 ? 0.18 + v * 0.4 : 0.5}
+                fill={v > 0.6 ? stroke : "rgba(28,26,19,0.06)"}
+                opacity={v > 0.6 ? 0.1 + v * 0.22 : 0.5}
               />
             );
           })
@@ -94,14 +98,9 @@ export function SystemPreviewMotif({ kind, color }) {
 
   if (kind === "thermal") {
     return (
-      <svg
-        viewBox="0 0 320 200"
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-      >
+      <svg {...svgProps}>
         <defs>
-          <radialGradient id="th" cx="0.5" cy="0.5" r="0.5">
+          <radialGradient id={gid} cx="0.5" cy="0.5" r="0.5">
             <stop offset="0" stopColor={stroke} stopOpacity="0.5" />
             <stop offset="1" stopColor={stroke} stopOpacity="0" />
           </radialGradient>
@@ -116,7 +115,7 @@ export function SystemPreviewMotif({ kind, color }) {
             fill="none"
           />
         ))}
-        <circle cx="160" cy="100" r="14" fill="url(#th)" />
+        <circle cx="160" cy="100" r="14" fill={`url(#${gid})`} />
         <circle cx="160" cy="100" r="3" fill={stroke} />
         {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => {
           const r1 = 24;
@@ -144,12 +143,7 @@ export function SystemPreviewMotif({ kind, color }) {
 
   if (kind === "graph") {
     return (
-      <svg
-        viewBox="0 0 320 200"
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-      >
+      <svg {...svgProps}>
         {[
           [40, 100],
           [90, 50],
@@ -210,10 +204,18 @@ export function SystemPreviewMotif({ kind, color }) {
 export function ModuleGlyph({ kind }) {
   const stroke = "var(--text-3)";
   const accent = "var(--accent)";
+  const svgProps = {
+    viewBox: "0 0 120 80",
+    width: 120,
+    height: 80,
+    fill: "none",
+    "aria-hidden": true,
+    focusable: "false",
+  };
 
   if (kind === "workflow") {
     return (
-      <svg viewBox="0 0 120 80" width="120" height="80" fill="none">
+      <svg {...svgProps}>
         <rect x="2" y="14" width="28" height="20" stroke={stroke} />
         <rect x="46" y="6" width="28" height="20" stroke={stroke} />
         <rect x="46" y="38" width="28" height="20" stroke={stroke} />
@@ -229,7 +231,7 @@ export function ModuleGlyph({ kind }) {
 
   if (kind === "dashboard") {
     return (
-      <svg viewBox="0 0 120 80" width="120" height="80" fill="none">
+      <svg {...svgProps}>
         <rect x="2" y="6" width="116" height="68" stroke={stroke} />
         <rect x="10" y="14" width="44" height="6" fill={stroke} opacity="0.5" />
         <rect x="10" y="26" width="44" height="42" stroke={stroke} />
@@ -249,7 +251,7 @@ export function ModuleGlyph({ kind }) {
 
   if (kind === "llm") {
     return (
-      <svg viewBox="0 0 120 80" width="120" height="80" fill="none">
+      <svg {...svgProps}>
         <rect x="6" y="8" width="40" height="16" stroke={stroke} />
         <rect x="6" y="28" width="40" height="16" stroke={stroke} />
         <rect x="6" y="48" width="40" height="16" stroke={stroke} />
@@ -272,7 +274,7 @@ export function ModuleGlyph({ kind }) {
 
   if (kind === "decision") {
     return (
-      <svg viewBox="0 0 120 80" width="120" height="80" fill="none">
+      <svg {...svgProps}>
         <polygon points="60,6 80,30 60,54 40,30" stroke={stroke} />
         <line x1="60" y1="54" x2="60" y2="74" stroke={stroke} />
         <circle cx="20" cy="30" r="6" stroke={stroke} />

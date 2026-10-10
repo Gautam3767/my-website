@@ -25,6 +25,7 @@ export default function linkifyTwyn(input) {
           className="twyn-link"
         >
           {part}
+          <span className="sr-only"> (opens in a new tab)</span>
         </a>
       );
     }

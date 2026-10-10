@@ -45,11 +45,14 @@ export default defineConfig({
           kind: "essay",
           title: "New entry",
           dek: "A short subhead.",
-          date: new Date().toISOString().slice(0, 10),
+          date: `${new Date().getFullYear()} · ${String(new Date().getMonth() + 1).padStart(2, "0")}`,
           read: "5 min",
           tags: [],
           featured: false,
-          body: "Start writing…",
+          body: {
+            type: "root",
+            children: [{ type: "p", children: [{ type: "text", text: "Start writing…" }] }],
+          },
         }),
         fields: [
           {
@@ -57,9 +60,15 @@ export default defineConfig({
             name: "slug",
             label: "Slug / ID",
             description:
-              "Used in the URL hash (e.g. /writing#my-slug). Lower-kebab-case.",
+              "The essay's URL: /writing/my-slug. Lower-kebab-case, unique.",
             required: true,
             isTitle: false,
+            ui: {
+              validate: (value) =>
+                value && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
+                  ? "Use lower-kebab-case: letters, numbers and hyphens only."
+                  : undefined,
+            },
           },
           {
             type: "string",
@@ -88,8 +97,8 @@ export default defineConfig({
           {
             type: "string",
             name: "date",
-            label: "Date label",
-            description: 'Display string e.g. "2026 · 04"',
+            label: "Date",
+            description: 'Year and month, e.g. "2026 · 04". Used for sorting, newest first.',
           },
           {
             type: "string",
@@ -107,6 +116,14 @@ export default defineConfig({
             type: "boolean",
             name: "featured",
             label: "Featured (appears as the big card on /writing)",
+          },
+          {
+            type: "string",
+            name: "pullQuote",
+            label: "Pull quote (optional)",
+            description:
+              "Shown on the featured card. Leave empty to use the first blockquote in the body.",
+            ui: { component: "textarea" },
           },
           {
             type: "rich-text",
@@ -150,7 +167,7 @@ export default defineConfig({
           experience: [],
           impact: [],
           reflection: "",
-          palette: "#6FE7FF",
+          palette: "#E0420C",
           motif: "topology",
         }),
         fields: [
@@ -158,7 +175,14 @@ export default defineConfig({
             type: "string",
             name: "slug",
             label: "Slug / ID",
+            description: "Used in the share link: /?system=my-slug. Lower-kebab-case, unique.",
             required: true,
+            ui: {
+              validate: (value) =>
+                value && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
+                  ? "Use lower-kebab-case: letters, numbers and hyphens only."
+                  : undefined,
+            },
           },
           {
             type: "string",
@@ -223,11 +247,12 @@ export default defineConfig({
             type: "string",
             name: "palette",
             label: "Accent palette",
+            description: "Stroke colour for the system's drawing.",
             options: [
-              { value: "#6FE7FF", label: "Cyan" },
-              { value: "#8BFFB1", label: "Green" },
-              { value: "#7AA7FF", label: "Blue" },
-              { value: "#FFCE7A", label: "Amber" },
+              { value: "#E0420C", label: "Drafting orange" },
+              { value: "#1A6B45", label: "Signal green" },
+              { value: "#2547B8", label: "Blueprint blue" },
+              { value: "#A36A00", label: "Amber" },
             ],
           },
           {
@@ -312,6 +337,13 @@ export default defineConfig({
               { type: "string", name: "based", label: "Based" },
               { type: "string", name: "workingWith", label: "Working with" },
               { type: "string", name: "status", label: "Status" },
+              {
+                type: "image",
+                name: "portrait",
+                label: "Portrait photo",
+                description: "Optional. Without one, the plate shows a monogram.",
+              },
+              { type: "string", name: "portraitAlt", label: "Portrait alt text" },
             ],
           },
           {
@@ -323,6 +355,13 @@ export default defineConfig({
               { type: "string", name: "linkedin", label: "LinkedIn URL" },
               { type: "string", name: "github", label: "GitHub URL" },
               { type: "string", name: "phone", label: "Phone number" },
+              {
+                type: "string",
+                name: "resume",
+                label: "Résumé file path",
+                description:
+                  'Path under /public, e.g. "/Gautam_Girdhar_Resume.pdf". A PDF opens everywhere; .docx needs Word.',
+              },
             ],
           },
           {
@@ -368,7 +407,10 @@ export default defineConfig({
             name: "capabilities",
             label: "Capabilities (L1–L4)",
             list: true,
-            ui: { itemProps: (item) => ({ label: item?.name }) },
+            ui: {
+              itemProps: (item) => ({ label: item?.name }),
+              defaultItem: () => ({ layer: "L0", name: "New layer", items: [] }),
+            },
             fields: [
               { type: "string", name: "layer", label: "Layer code (e.g. L4)" },
               { type: "string", name: "name", label: "Layer name" },

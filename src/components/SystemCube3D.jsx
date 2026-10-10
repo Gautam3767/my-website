@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useInView, usePrefersReducedMotion } from "../hooks/useMedia.js";
 
 function project3D(x, y, z, rotX, rotY, focal = 720) {
   const cy = Math.cos(rotY);
@@ -13,41 +14,75 @@ function project3D(x, y, z, rotX, rotY, focal = 720) {
   return { x: x1 * s, y: y1 * s, z: z2, s };
 }
 
-export default function SystemCube3D({ ambientMotion = true }) {
+const BASE = { x: 0.24, y: 0.55 };
+const clamp = (v, m = 0.6) => Math.max(-m, Math.min(m, v));
+
+// The animation only runs while the figure is on screen, the tab is
+// visible, nothing is open on top of it, and the visitor hasn't asked for
+// reduced motion. Otherwise it holds its last pose and costs nothing.
+export default function SystemCube3D({ ambientMotion = true, paused = false }) {
   const containerRef = useRef(null);
-  const [rot, setRot] = useState({ x: 0.24, y: 0.55 });
+  const [rot, setRot] = useState(BASE);
+  const inView = useInView(containerRef);
+  const reduce = usePrefersReducedMotion();
+  const run = inView && !paused && !reduce;
+  const motion = useRef({ cur: { ...BASE }, target: { ...BASE }, t: 0, pointer: null });
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
 
   useEffect(() => {
-    let raf;
-    const target = { x: 0.24, y: 0.55 };
-    let accum = 0;
-    const cur = { x: 0.24, y: 0.55 };
+    if (!run) return;
+    const m = motion.current;
+    let raf = 0;
+    let last = performance.now();
 
     const onMove = (e) => {
-      const el = containerRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
-      const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-      target.x = 0.24 + dy * 0.32;
-      target.y = 0.55 + dx * 0.7;
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      m.pointer = [e.clientX, e.clientY];
     };
-    window.addEventListener("mousemove", onMove);
+    const onOut = (e) => {
+      if (!e.relatedTarget) m.pointer = null;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("mouseout", onOut);
 
-    const tick = () => {
-      if (ambientMotion) accum += 0.0026;
-      cur.x += (target.x - cur.x) * 0.08;
-      cur.y = target.y + accum;
-      setRot({ x: cur.x, y: cur.y });
+    const tick = (now) => {
+      // time-based, so 120 Hz screens don't run it twice as fast
+      const dt = Math.min(now - last, 50) / 1000;
+      last = now;
+      if (ambientMotion) m.t += dt;
+
+      const el = containerRef.current;
+      if (m.pointer && el) {
+        const r = el.getBoundingClientRect();
+        // clamped, so reading the headline doesn't wrench the figure round
+        const dx = clamp((m.pointer[0] - (r.left + r.width / 2)) / r.width);
+        const dy = clamp((m.pointer[1] - (r.top + r.height / 2)) / r.height);
+        m.target.x = BASE.x + dy * 0.32;
+        m.target.y = BASE.y + dx * 0.7;
+      } else {
+        m.target.x = BASE.x;
+        m.target.y = BASE.y;
+      }
+
+      // both axes eased the same way
+      const k = 1 - Math.pow(1 - 0.08, dt * 60);
+      m.cur.x += (m.target.x - m.cur.x) * k;
+      m.cur.y += (m.target.y - m.cur.y) * k;
+
+      // a slow, bounded sway instead of an endless spin — the layer
+      // labels never swing round behind the stack
+      const sway = ambientMotion ? Math.sin(m.t * 0.45) * 0.3 : 0;
+      setRot({ x: m.cur.x, y: m.cur.y + sway });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("mouseout", onOut);
     };
-  }, [ambientMotion]);
+  }, [run, ambientMotion]);
 
   const W = 600;
   const H = 600;
@@ -147,20 +182,22 @@ export default function SystemCube3D({ ambientMotion = true }) {
         width="100%"
         height="100%"
         style={{ display: "block", overflow: "visible" }}
+        role="img"
+        aria-label="Figure 1, the intelligence stack: five layers from data, through process and intelligence, to product and a human decision."
       >
         <defs>
-          <radialGradient id="cubeAtm" cx="0.5" cy="0.5" r="0.55">
+          <radialGradient id={`${uid}-atm`} cx="0.5" cy="0.5" r="0.55">
             <stop offset="0" stopColor="var(--accent)" stopOpacity="0.06" />
             <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
           </radialGradient>
-          <linearGradient id="beamG" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`${uid}-beam`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="var(--accent)" stopOpacity="0" />
             <stop offset="0.5" stopColor="var(--accent)" stopOpacity="0.7" />
             <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
           </linearGradient>
         </defs>
 
-        <rect x="0" y="0" width={W} height={H} fill="url(#cubeAtm)" />
+        <rect x="0" y="0" width={W} height={H} fill={`url(#${uid}-atm)`} />
 
         <ellipse
           cx={CX}
@@ -195,7 +232,7 @@ export default function SystemCube3D({ ambientMotion = true }) {
               y1={CY + top.y}
               x2={CX + bot.x}
               y2={CY + bot.y}
-              stroke="url(#beamG)"
+              stroke={`url(#${uid}-beam)`}
               strokeWidth="1.2"
             />
           );
@@ -306,7 +343,7 @@ export default function SystemCube3D({ ambientMotion = true }) {
             <text
               textAnchor="end"
               y="13"
-              fontFamily="Geist"
+              fontFamily="Geist, ui-sans-serif, system-ui, sans-serif"
               fontSize="11"
               fill="var(--text-2)"
               letterSpacing="-0.1"
@@ -330,14 +367,16 @@ export default function SystemCube3D({ ambientMotion = true }) {
       </svg>
 
       <div
+        aria-hidden="true"
         style={{
           position: "absolute",
-          left: 6,
-          top: 6,
+          // clear of the registration mark in the corner
+          left: 36,
+          top: 10,
           display: "flex",
           gap: 18,
           fontFamily: "var(--font-mono)",
-          fontSize: 10,
+          fontSize: 10.5,
           letterSpacing: "0.16em",
           color: "var(--text-3)",
           textTransform: "uppercase",
@@ -345,13 +384,17 @@ export default function SystemCube3D({ ambientMotion = true }) {
       >
         <span>Fig. 01</span>
         <span>The Intelligence Stack</span>
-        <span style={{ color: "var(--accent)" }}>● live</span>
+        <span style={{ color: "var(--accent-text)" }}>
+          ● {reduce ? "still" : "live"}
+        </span>
       </div>
       <div
+        aria-hidden="true"
         style={{
           position: "absolute",
           right: 6,
           bottom: 6,
+          fontVariantNumeric: "tabular-nums",
           fontFamily: "var(--font-mono)",
           fontSize: 10,
           letterSpacing: "0.16em",
@@ -360,9 +403,7 @@ export default function SystemCube3D({ ambientMotion = true }) {
         }}
       >
         rot ·{" "}
-        {(((rot.y * 180) / Math.PI) % 360)
-          .toFixed(0)
-          .padStart(3, "0")}
+        {String(Math.round((((rot.y * 180) / Math.PI) % 360 + 360) % 360)).padStart(3, "0")}
         °
       </div>
     </div>

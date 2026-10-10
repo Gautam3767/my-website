@@ -2,7 +2,7 @@
 export default function GridOverlay() {
   return (
     <div
-      aria-hidden
+      aria-hidden="true"
       style={{
         position: "fixed",
         inset: 0,

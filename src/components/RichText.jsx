@@ -36,12 +36,9 @@ function renderInline(node, key) {
         href={node.url}
         target="_blank"
         rel="noreferrer"
-        style={{
-          color: "var(--accent)",
-          borderBottom: "1px solid var(--accent-line)",
-        }}
       >
         {renderChildren(node.children)}
+        <span className="sr-only"> (opens in a new tab)</span>
       </a>
     );
   }
@@ -82,7 +79,7 @@ function renderBlock(node, key) {
     case "h1":
     case "h2":
       return (
-        <h2
+        <h3
           key={key}
           style={{
             margin: "22px 0 0",
@@ -94,14 +91,14 @@ function renderBlock(node, key) {
           }}
         >
           {renderChildren(node.children)}
-        </h2>
+        </h3>
       );
     case "h3":
     case "h4":
     case "h5":
     case "h6":
       return (
-        <h3
+        <h4
           key={key}
           style={{
             margin: "18px 0 0",
@@ -113,7 +110,7 @@ function renderBlock(node, key) {
           }}
         >
           {renderChildren(node.children)}
-        </h3>
+        </h4>
       );
     case "p":
       return (
@@ -201,6 +198,8 @@ function renderBlock(node, key) {
           key={key}
           src={node.url}
           alt={node.alt || ""}
+          loading="lazy"
+          decoding="async"
           style={{
             maxWidth: "100%",
             display: "block",
@@ -240,7 +239,7 @@ export default function RichText({ content }) {
     ? content
     : content.children || [];
   return (
-    <div style={{ display: "grid", gap: 22 }}>
+    <div className="rich-text">
       {children.map((node, i) => renderBlock(node, i))}
     </div>
   );

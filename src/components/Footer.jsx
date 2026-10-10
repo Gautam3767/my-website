@@ -1,59 +1,32 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
+import { loadSite } from "../data/loaders.js";
+import ResumeLink from "./ResumeLink.jsx";
 
-// Engineering-drawing title block. Every field is real.
-export default function Footer({ variant = "portfolio" }) {
+const SITE = loadSite();
+const YEAR = new Date().getFullYear();
+
+// Engineering-drawing title block. Every field is real, and every contact
+// detail comes from the same place as the Contact section.
+function Footer({ variant = "portfolio" }) {
   const sheet = variant === "writing" ? "GG-02" : "GG-01";
   const title =
     variant === "writing"
-      ? "NOTES FROM THE SHOP FLOOR"
-      : "AI ENGINEER + SOLUTIONS ARCHITECT";
+      ? "Notes from the shop floor"
+      : "AI engineer + solutions architect";
+  const email = SITE.contact.email;
 
   return (
-    <footer
-      className="title-block"
-      style={{ padding: "0 var(--pad-x) 28px" }}
-    >
+    <footer className="title-block">
       <div className="wrap">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 18,
-            flexWrap: "wrap",
-            padding: "20px 0",
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            letterSpacing: "0.08em",
-            color: "var(--ink-3)",
-          }}
-        >
+        <div className="title-block-bar">
           <span>FOR PRODUCTION — NOT FOR DEMO PURPOSES</span>
-          {variant === "writing" ? (
-            <Link
-              to="/"
-              style={{
-                color: "var(--ink-2)",
-                borderBottom: "1px solid var(--line-2)",
-                paddingBottom: 2,
-              }}
-            >
-              ← BACK TO PORTFOLIO
-            </Link>
+          {variant === "portfolio" ? (
+            <ResumeLink className="" label="Download résumé" />
           ) : (
-            <a
-              href="/Gautam_Girdhar_Resume.docx"
-              download
-              style={{
-                color: "var(--ink-2)",
-                borderBottom: "1px solid var(--line-2)",
-                paddingBottom: 2,
-                display: "inline-flex",
-                gap: 10,
-              }}
-            >
-              DOWNLOAD RÉSUMÉ <span style={{ color: "var(--accent)" }}>↓</span>
-            </a>
+            <Link to="/">
+              <span>← Back to portfolio</span>
+            </Link>
           )}
         </div>
 
@@ -64,41 +37,36 @@ export default function Footer({ variant = "portfolio" }) {
           </div>
           <div className="title-block-cell">
             <div className="k">Location</div>
-            <div className="v">New Delhi · IN</div>
+            <div className="v">{SITE.about.based || "New Delhi · India"}</div>
           </div>
           <div className="title-block-cell">
             <div className="k">Contact</div>
-            <a className="v" href="mailto:gg@gautamgirdhar.com">
-              gg@gautamgirdhar.com
-            </a>
+            {email ? (
+              <a className="v" href={`mailto:${email}`}>
+                {/* break after the @, never inside the domain */}
+                {email.split("@")[0]}@<wbr />
+                {email.split("@").slice(1).join("@")}
+              </a>
+            ) : (
+              <Link className="v" to="/#contact">
+                Contact
+              </Link>
+            )}
           </div>
           <div className="title-block-cell">
             <div className="k">Revision</div>
-            <div className="v">© 2026 · REV B</div>
+            <div className="v">© {YEAR} · REV C</div>
           </div>
           <div
             className="title-block-cell"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-            }}
+            style={{ display: "flex", alignItems: "center" }}
           >
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontStretch: "118%",
-                fontWeight: 740,
-                fontSize: 22,
-                letterSpacing: "-0.01em",
-                color: "var(--accent)",
-              }}
-            >
-              {sheet}
-            </span>
+            <span className="sheet-id">{sheet}</span>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+
+export default memo(Footer);

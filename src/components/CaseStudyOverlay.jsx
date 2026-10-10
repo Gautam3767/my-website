@@ -1,39 +1,16 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useId } from "react";
+import Dialog from "./Dialog.jsx";
 import MonoLabel from "./MonoLabel.jsx";
 import { SystemPreviewMotif } from "./Motifs.jsx";
 import linkifyTwyn from "../utils/linkifyTwyn.jsx";
+import { useLastDefined } from "../hooks/useLastDefined.js";
 
 function ListBlock({ items, bullet = "—" }) {
   return (
-    <ul
-      style={{
-        margin: 0,
-        padding: 0,
-        listStyle: "none",
-        display: "grid",
-        gap: 12,
-      }}
-    >
+    <ul className="case-list">
       {items.map((it, i) => (
-        <li
-          key={i}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "20px 1fr",
-            gap: 10,
-            color: "var(--ink-2)",
-            fontSize: 15.5,
-            lineHeight: 1.55,
-          }}
-        >
-          <span
-            style={{
-              color: "var(--accent)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              paddingTop: 2,
-            }}
-          >
+        <li key={i}>
+          <span className="bullet" aria-hidden="true">
             {bullet}
           </span>
           <span>{linkifyTwyn(it)}</span>
@@ -43,309 +20,157 @@ function ListBlock({ items, bullet = "—" }) {
   );
 }
 
-function ArchFlow({ items, color }) {
+function ArchFlow({ items }) {
   return (
-    <div style={{ display: "grid", gap: 10 }}>
+    <ol className="arch-list">
       {items.map((it, i) => (
-        <div
-          key={i}
-          className="arch-row"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "auto 1fr",
-            gap: 14,
-            alignItems: "center",
-            padding: "12px 14px",
-            border: "1px solid var(--line-2)",
-            background: "var(--paper-1)",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 11,
-              color: color || "var(--accent)",
-              letterSpacing: "0.12em",
-              minWidth: 28,
-            }}
-          >
+        <li key={i} className="arch-row">
+          <span className="num" aria-hidden="true">
             {String(i + 1).padStart(2, "0")}
           </span>
-          <span style={{ color: "var(--ink)", fontSize: 15 }}>
-            {linkifyTwyn(it)}
-          </span>
-        </div>
+          <span>{linkifyTwyn(it)}</span>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
-export default function CaseStudyOverlay({ system, onClose }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (!system) return;
-    document.body.style.overflow = "hidden";
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    if (ref.current) ref.current.scrollTop = 0;
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [system, onClose]);
-
-  if (!system) return null;
-  const s = system;
+// A case study as a "drawing" — a modal sheet over the portfolio. The URL
+// carries it (?system=slug), so it can be shared and Back closes it.
+export default function CaseStudyOverlay({ system, next, onClose, onOpen }) {
+  const s = useLastDefined(system);
+  const titleId = useId();
+  if (!s) return null;
 
   const rows = [
     {
-      k: "01",
-      t: "Organisational Problem",
-      c: (
-        <p
-          style={{
-            margin: 0,
-            color: "var(--ink-2)",
-            fontSize: 16,
-            lineHeight: 1.65,
-            textWrap: "pretty",
-          }}
-        >
+      t: "Organisational problem",
+      c: s.problem && (
+        <p className="t-body" style={{ margin: 0, fontSize: 16, lineHeight: 1.65 }}>
           {linkifyTwyn(s.problem)}
         </p>
       ),
     },
-    { k: "02", t: "AI Opportunity", c: <ListBlock items={s.opportunity} /> },
+    { t: "AI opportunity", c: s.opportunity.length > 0 && <ListBlock items={s.opportunity} /> },
+    { t: "System architecture", c: s.architecture.length > 0 && <ArchFlow items={s.architecture} /> },
+    { t: "Engineering decisions", c: s.decisions.length > 0 && <ListBlock items={s.decisions} /> },
+    { t: "Product experience", c: s.experience.length > 0 && <ListBlock items={s.experience} /> },
+    { t: "Impact", c: s.impact.length > 0 && <ListBlock items={s.impact} bullet="◆" /> },
     {
-      k: "03",
-      t: "System Architecture",
-      c: <ArchFlow items={s.architecture} color={s.palette} />,
-    },
-    { k: "04", t: "Engineering Decisions", c: <ListBlock items={s.decisions} /> },
-    { k: "05", t: "Product Experience", c: <ListBlock items={s.experience} /> },
-    { k: "06", t: "Impact", c: <ListBlock items={s.impact} bullet="◆" /> },
-    {
-      k: "07",
       t: "Reflection",
-      c: (
-        <p
+      c: s.reflection && (
+        <blockquote
           className="t-serif"
-          style={{
-            margin: 0,
-            color: "var(--ink)",
-            fontSize: 21,
-            lineHeight: 1.45,
-          }}
+          style={{ margin: 0, color: "var(--ink)", fontSize: 21, lineHeight: 1.45 }}
         >
           “{linkifyTwyn(s.reflection)}”
-        </p>
+        </blockquote>
       ),
     },
-  ];
+  ].filter((r) => r.c);
+
+  const specs = [
+    ["Domain", s.domain],
+    ["Role", s.role],
+    ["Timeline", s.timeline],
+    ["Type", s.type],
+  ].filter(([, v]) => v);
 
   return (
-    <div
-      className="overlay-backdrop"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+    <Dialog
+      open={!!system}
+      onRequestClose={onClose}
+      labelledBy={titleId}
+      className="case-dialog"
+      contentKey={s.id}
     >
-      <div
-        ref={ref}
-        onClick={(e) => e.stopPropagation()}
-        className="case-overlay overlay-panel"
-        style={{
-          width: "min(1180px, 96vw)",
-          height: "92vh",
-          marginTop: "4vh",
-        }}
-      >
-        <div
-          className="overlay-head"
-          style={{
-            padding: "16px 28px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span style={{ width: 9, height: 9, background: s.palette }} />
+      <div className="overlay-head">
+        <div className="overlay-head-inner">
+          <div className="overlay-crumb">
             <span
-              className="t-label"
-              style={{ letterSpacing: "0.14em", color: "var(--ink-2)" }}
-            >
-              Drawing / {s.id}
-            </span>
+              aria-hidden="true"
+              style={{ width: 9, height: 9, background: s.palette, flexShrink: 0 }}
+            />
+            <span className="t-label">Drawing / {s.id}</span>
           </div>
-          <button onClick={onClose} className="stamp">
-            CLOSE <span style={{ color: "var(--accent)" }}>ESC</span>
+          <button type="button" onClick={onClose} className="stamp dialog-close">
+            Close <kbd>Esc</kbd>
           </button>
         </div>
+      </div>
 
-        <div
-          style={{
-            padding: "44px 44px 28px",
-            borderBottom: "1px solid var(--line)",
-          }}
-        >
-          <MonoLabel>System</MonoLabel>
-          <h2
-            className="t-display"
-            style={{
-              margin: "18px 0 12px",
-              fontSize: "clamp(32px, 4.2vw, 58px)",
-            }}
-          >
-            {s.name}
-          </h2>
-          <div
-            className="t-body"
-            style={{ fontSize: 16, maxWidth: 720 }}
-          >
+      <div className="case-hero case-pad">
+        <MonoLabel>System</MonoLabel>
+        <h2 id={titleId} className="t-display case-title">
+          {s.name}
+        </h2>
+        {s.short && (
+          <p className="t-body" style={{ margin: 0, fontSize: 16, maxWidth: "68ch" }}>
             {linkifyTwyn(s.short)}
-          </div>
-
-          <div
-            className="grid-4"
-            style={{
-              marginTop: 32,
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 14,
-              fontFamily: "var(--font-mono)",
-            }}
-          >
-            {[
-              ["Domain", s.domain],
-              ["Role", s.role],
-              ["Timeline", s.timeline],
-              ["Type", s.type],
-            ].map(([k, v]) => (
-              <div
-                key={k}
-                style={{
-                  borderTop: "1px solid var(--line-2)",
-                  paddingTop: 12,
-                }}
-              >
-                <div className="t-label" style={{ fontSize: 9.5 }}>
+          </p>
+        )}
+        {specs.length > 0 && (
+          <dl className="case-specs">
+            {specs.map(([k, v]) => (
+              <div key={k}>
+                <dt className="t-label" style={{ fontSize: 10.5 }}>
                   {k}
-                </div>
-                <div
-                  style={{
-                    marginTop: 6,
-                    color: "var(--ink)",
-                    fontSize: 12.5,
-                    letterSpacing: "0.02em",
-                  }}
-                >
-                  {linkifyTwyn(v)}
-                </div>
+                </dt>
+                <dd>{linkifyTwyn(v)}</dd>
               </div>
             ))}
-          </div>
-        </div>
+          </dl>
+        )}
+      </div>
 
-        <div
-          style={{
-            height: 280,
-            borderBottom: "1px solid var(--line)",
-            background: "var(--paper-2)",
-            position: "relative",
-            overflow: "hidden",
-            cursor: "crosshair",
-          }}
+      <figure className="case-figure" style={{ margin: 0 }}>
+        <SystemPreviewMotif kind={s.motif} color={s.palette} fit="meet" />
+        <figcaption
+          className="plate-caption plate-caption--chip"
+          style={{ left: 16, bottom: 14, right: 16, justifyContent: "space-between" }}
         >
-          <SystemPreviewMotif kind={s.motif} color={s.palette} />
-          <div className="plate-caption" style={{ left: 24, bottom: 18 }}>
-            Fig · Abstracted system preview
-          </div>
-          <div
-            className="plate-caption"
-            style={{ right: 24, top: 16, color: s.palette }}
-          >
+          <span className="caption-secondary">Fig · abstracted system preview</span>
+          <span>
+            <span className="swatch" style={{ background: s.palette }} aria-hidden="true" />
             Client work — abstracted
-          </div>
-        </div>
+          </span>
+        </figcaption>
+      </figure>
 
-        <div
-          className="case-rows"
-          style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 0 }}
-        >
-          {rows.map((row) => (
-            <FragmentRow key={row.k} row={row} />
-          ))}
-        </div>
+      <div className="case-rows">
+        {rows.map((row, i) => (
+          <Fragment key={row.t}>
+            <div className="case-row-label">
+              <div className="num" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </div>
+              <h3 className="t-caps">{row.t}</h3>
+            </div>
+            <div className="case-row-content">{row.c}</div>
+          </Fragment>
+        ))}
+      </div>
 
-        <div
-          style={{
-            padding: "28px 44px 44px",
-            borderTop: "1px solid var(--line)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 20,
-            flexWrap: "wrap",
-          }}
-        >
-          <div className="t-label">End of drawing · {s.id}</div>
-          <button onClick={onClose} className="btn">
-            <span>← Back to Systems</span>
-          </button>
-        </div>
+      <div className="dialog-foot case-pad">
+        {next ? (
+          <a
+            href={`/?system=${encodeURIComponent(next.id)}`}
+            className="next-link"
+            onClick={(e) => {
+              e.preventDefault();
+              onOpen(next.id, { replace: true });
+            }}
+          >
+            <span className="t-label">Next drawing →</span>
+            <span className="t-title">{next.name}</span>
+          </a>
+        ) : (
+          <span className="t-label">End of drawing · {s.id}</span>
+        )}
+        <button type="button" onClick={onClose} className="btn">
+          <span>← Back to systems</span>
+        </button>
       </div>
-    </div>
-  );
-}
-
-function FragmentRow({ row }) {
-  return (
-    <>
-      <div
-        className="case-row-label"
-        style={{
-          padding: "32px 24px 32px 44px",
-          borderTop: "1px solid var(--line)",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            color: "var(--accent)",
-            letterSpacing: "0.14em",
-          }}
-        >
-          {row.k}
-        </div>
-        <div
-          style={{
-            marginTop: 10,
-            fontFamily: "var(--font-display)",
-            fontStretch: "112%",
-            fontWeight: 640,
-            textTransform: "uppercase",
-            fontSize: 14.5,
-            letterSpacing: "0.02em",
-            color: "var(--ink)",
-          }}
-        >
-          {row.t}
-        </div>
-      </div>
-      <div
-        className="case-row-content"
-        style={{
-          padding: "32px 44px 32px 24px",
-          borderTop: "1px solid var(--line)",
-        }}
-      >
-        {row.c}
-      </div>
-    </>
+    </Dialog>
   );
 }

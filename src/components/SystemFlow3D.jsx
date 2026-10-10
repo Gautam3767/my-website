@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useInView, usePrefersReducedMotion } from "../hooks/useMedia.js";
 
 function project3D(x, y, z, rotX, rotY, focal = 1250) {
   const cy = Math.cos(rotY);
@@ -73,46 +74,74 @@ function pathPoint(path, t) {
   return path[path.length - 1];
 }
 
+const BASE = { x: 0.52, y: 0 };
+
 export default function SystemFlow3D({
   ambientMotion = true,
   accent = "var(--blue)",
+  paused = false,
 }) {
   const containerRef = useRef(null);
-  const [frame, setFrame] = useState({ rx: 0.52, ry: 0, t: 0 });
+  const [frame, setFrame] = useState({ rx: BASE.x, ry: BASE.y, t: 0 });
+  const [compact, setCompact] = useState(false);
+  const inView = useInView(containerRef);
+  const reduce = usePrefersReducedMotion();
+  const run = inView && !paused && !reduce;
+  const motion = useRef({ cur: { ...BASE }, target: { ...BASE }, t: 0 });
+
+  // narrow plates get a simplified drawing with larger labels
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCompact(entry.contentRect.width < 560);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
-    let raf;
-    const target = { x: 0.52, y: 0 };
-    const cur = { x: 0.52, y: 0 };
-    let accum = 0;
+    if (!run) return;
+    const m = motion.current;
+    const el = containerRef.current;
+    let raf = 0;
+    let last = performance.now();
 
     const onMove = (e) => {
-      const el = containerRef.current;
-      if (!el) return;
+      if (e.pointerType && e.pointerType !== "mouse") return;
       const r = el.getBoundingClientRect();
       const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
       const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-      target.x = 0.52 + dy * 0.22;
-      target.y = dx * 0.4;
+      m.target.x = BASE.x + dy * 0.22;
+      m.target.y = dx * 0.4;
     };
-    const el = containerRef.current;
-    if (el) el.addEventListener("mousemove", onMove);
+    const onLeave = () => {
+      m.target.x = BASE.x;
+      m.target.y = BASE.y;
+    };
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", onLeave);
 
-    const tick = () => {
-      if (ambientMotion) accum += 0.016;
-      cur.x += (target.x - cur.x) * 0.06;
-      const sway = ambientMotion ? Math.sin(accum * 0.55) * 0.1 : 0;
-      cur.y += (target.y + sway - cur.y) * 0.06;
-      setFrame({ rx: cur.x, ry: cur.y, t: accum });
+    const tick = (now) => {
+      const dt = Math.min(now - last, 50) / 1000;
+      last = now;
+      // packets keep flowing (they explain the diagram); the board itself
+      // only moves when the cursor tilts it
+      if (ambientMotion) m.t += dt;
+      const k = 1 - Math.pow(1 - 0.06, dt * 60);
+      m.cur.x += (m.target.x - m.cur.x) * k;
+      m.cur.y += (m.target.y - m.cur.y) * k;
+      setFrame({ rx: m.cur.x, ry: m.cur.y, t: m.t });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(raf);
-      if (el) el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", onLeave);
     };
-  }, [ambientMotion]);
+  }, [run, ambientMotion]);
 
   const W = 780;
   const H = 390;
@@ -154,10 +183,10 @@ export default function SystemFlow3D({
 
   // animated packets
   const mainPackets = [0, 0.2, 0.4, 0.6, 0.8].map((off) =>
-    pathPoint(MAIN_PATH, (t * 0.11 + off) % 1)
+    pathPoint(MAIN_PATH, (t * 0.96 * 0.11 + off) % 1)
   );
   const fbPackets = [0, 0.34, 0.67].map((off) =>
-    pathPoint(FEEDBACK_PATH, (t * 0.055 + off) % 1)
+    pathPoint(FEEDBACK_PATH, (t * 0.96 * 0.055 + off) % 1)
   );
 
   return (
@@ -167,6 +196,8 @@ export default function SystemFlow3D({
         width="100%"
         height="100%"
         style={{ display: "block" }}
+        role="img"
+        aria-label="Figure 2, system flow: data is ingested, reaches the model, surfaces in an interface and ends with a human decision; feedback returns to a retraining queue."
       >
         {/* plane grid */}
         {gridLines.map((l, i) => (
@@ -336,27 +367,29 @@ export default function SystemFlow3D({
               <circle cx={top.x} cy={top.y} r="1.6" fill={color} />
               <text
                 x={top.x}
-                y={top.y - 18}
+                y={top.y - (compact ? 10 : 18)}
                 textAnchor="middle"
                 fontFamily="IBM Plex Mono"
-                fontSize="10.5"
+                fontSize={compact ? 21 : 10.5}
                 fontWeight="500"
                 fill={color}
-                letterSpacing="1.6"
+                letterSpacing={compact ? 0.5 : 1.6}
               >
-                {l.code} · {l.name}
+                {compact ? l.name : `${l.code} · ${l.name}`}
               </text>
-              <text
-                x={top.x}
-                y={top.y - 6}
-                textAnchor="middle"
-                fontFamily="IBM Plex Mono"
-                fontSize="8"
-                fill="var(--ink-3)"
-                letterSpacing="0.6"
-              >
-                {l.sub}
-              </text>
+              {!compact && (
+                <text
+                  x={top.x}
+                  y={top.y - 6}
+                  textAnchor="middle"
+                  fontFamily="IBM Plex Mono"
+                  fontSize="9"
+                  fill="var(--ink-3)"
+                  letterSpacing="0.4"
+                >
+                  {l.sub}
+                </text>
+              )}
             </g>
           );
         })}
@@ -370,11 +403,11 @@ export default function SystemFlow3D({
               y={p.y + 16}
               textAnchor="middle"
               fontFamily="IBM Plex Mono"
-              fontSize="9"
+              fontSize={compact ? 17 : 9.5}
               fill="var(--ink-3)"
-              letterSpacing="1.8"
+              letterSpacing={compact ? 1 : 1.8}
             >
-              ← FEEDBACK · RETRAINING QUEUE
+              {compact ? "← FEEDBACK" : "← FEEDBACK · RETRAINING QUEUE"}
             </text>
           );
         })()}

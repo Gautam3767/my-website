@@ -95,4 +95,8 @@ public/          static assets (favicon, résumé)
 
 Drop a new JSON file into `content/posts/` matching the existing shape and
 Vite picks it up automatically. The `slug` field becomes the filename and
-the URL hash on `/writing`.
+the essay's URL: `/writing/<slug>`. Case studies open at `/?system=<slug>`.
+
+`npm run build` finishes with `scripts/prerender-meta.mjs`, which writes a
+static HTML head for `/writing` and every essay (so link previews show the
+right title), plus `rss.xml` and `sitemap.xml`.

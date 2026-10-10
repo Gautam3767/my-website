@@ -11,7 +11,9 @@ export default function Section({
     <section
       id={id}
       data-screen-label={id}
-      className="sheet"
+      aria-label={tab}
+      tabIndex={-1}
+      className={`sheet ${plate ? "plate-section" : ""}`.trim()}
       style={
         plate
           ? {
@@ -25,6 +27,7 @@ export default function Section({
       {tab && (
         <div
           className="sheet-tab"
+          aria-hidden="true"
           style={
             plate
               ? {

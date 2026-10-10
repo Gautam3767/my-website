@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import GridOverlay from "../components/GridOverlay.jsx";
 import TopNav from "../components/TopNav.jsx";
 import MonoLabel from "../components/MonoLabel.jsx";
@@ -12,11 +12,18 @@ import { ModuleGlyph, SystemPreviewMotif } from "../components/Motifs.jsx";
 import CaseStudyOverlay from "../components/CaseStudyOverlay.jsx";
 import Footer from "../components/Footer.jsx";
 import Reveal from "../components/Reveal.jsx";
+import usePageMeta from "../hooks/usePageMeta.js";
+import { prefersReducedMotion } from "../hooks/useMedia.js";
 import {
   loadCaseStudies,
   loadSite,
   loadPosts,
   KIND_META,
+  SITE_TITLE,
+  SITE_DESCRIPTION,
+  countLabel,
+  numberWord,
+  externalHref,
 } from "../data/loaders.js";
 import linkifyTwyn from "../utils/linkifyTwyn.jsx";
 
@@ -100,27 +107,62 @@ const PROCESS_STEPS = [
   },
 ];
 
-const CAPS = SITE.capabilities || [];
-const BELIEFS = SITE.philosophy?.beliefs || [];
+const CAPS = SITE.capabilities;
+const BELIEFS = SITE.philosophy.beliefs;
+
+const SECTION_IDS = [
+  "hero",
+  "build",
+  "systems",
+  "object-study",
+  "process",
+  "capabilities",
+  "notes",
+  "philosophy",
+  "about",
+  "contact",
+];
+
+const NAV_FOR_SECTION = {
+  build: "systems",
+  systems: "systems",
+  "object-study": "systems",
+  process: "process",
+  capabilities: "capabilities",
+  notes: "writing",
+  philosophy: "about",
+  about: "about",
+  contact: "contact",
+};
 
 export default function PortfolioPage() {
   const [active, setActive] = useState("hero");
-  const [openSystem, setOpenSystem] = useState(null);
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // the open case study lives in the URL: shareable, and Back closes it
+  const openId = params.get("system");
+  const system = useMemo(
+    () => SYSTEMS.find((s) => s.id === openId) || null,
+    [openId]
+  );
+  const nextSystem = system
+    ? SYSTEMS[(SYSTEMS.indexOf(system) + 1) % SYSTEMS.length]
+    : null;
+
+  usePageMeta(
+    system
+      ? {
+          title: `${system.name} — Gautam Girdhar`,
+          description: system.short || SITE_DESCRIPTION,
+          path: `/?system=${system.id}`,
+        }
+      : { title: SITE_TITLE, description: SITE_DESCRIPTION, path: "/" }
+  );
 
   useEffect(() => {
-    const ids = [
-      "hero",
-      "build",
-      "systems",
-      "object-study",
-      "process",
-      "capabilities",
-      "notes",
-      "philosophy",
-      "about",
-      "contact",
-    ];
-    const els = ids.map((id) => document.getElementById(id)).filter(Boolean);
+    const els = SECTION_IDS.map((id) => document.getElementById(id)).filter(Boolean);
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -133,74 +175,86 @@ export default function PortfolioPage() {
     return () => io.disconnect();
   }, []);
 
-  const jumpTo = useCallback((id) => {
+  const jumpTo = useCallback((id, { smooth = true } = {}) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const y = el.getBoundingClientRect().top + window.scrollY - 60;
-    window.scrollTo({ top: y, behavior: "smooth" });
+    el.scrollIntoView({
+      behavior: smooth && !prefersReducedMotion() ? "smooth" : "auto",
+      block: "start",
+    });
+    // move focus with the viewport so keyboard users land in the section
+    el.focus({ preventScroll: true });
   }, []);
 
-  // honour hash deep-link on landing or hash change (e.g. "/#about")
+  // honour hash deep-links on landing (e.g. "/#about" from /writing)
   useEffect(() => {
-    const handle = () => {
-      if (!window.location.hash) return;
-      const id = window.location.hash.replace("#", "");
-      const el = document.getElementById(id);
-      if (el) jumpTo(id);
-    };
-    const t = setTimeout(handle, 250);
-    window.addEventListener("hashchange", handle);
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener("hashchange", handle);
-    };
-  }, [jumpTo]);
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const t = setTimeout(() => jumpTo(id, { smooth: false }), 120);
+    return () => clearTimeout(t);
+  }, [location.hash, jumpTo]);
 
-  const system = useMemo(
-    () => SYSTEMS.find((s) => s.id === openSystem) || null,
-    [openSystem]
+  const openSystem = useCallback(
+    (id, { replace = false } = {}) => {
+      navigate(
+        { search: `?system=${encodeURIComponent(id)}` },
+        {
+          // "next drawing" replaces the entry but keeps how we got here,
+          // so Close still returns to the right place
+          state: replace ? window.history.state?.usr : { fromApp: true },
+          replace,
+          preventScrollReset: true,
+        }
+      );
+    },
+    [navigate]
   );
 
-  const navActive =
-    ({
-      hero: "hero",
-      build: "systems",
-      systems: "systems",
-      "object-study": "systems",
-      process: "process",
-      capabilities: "capabilities",
-      notes: "writing",
-      philosophy: "about",
-      about: "about",
-      contact: "contact",
-    })[active] || active;
+  // one close per open, however many times Close / Esc is pressed
+  const closedFor = useRef(null);
+  useEffect(() => {
+    closedFor.current = null;
+  }, [openId]);
+  const closeSystem = useCallback(() => {
+    if (!openId || closedFor.current === openId) return;
+    closedFor.current = openId;
+    if (location.state?.fromApp) navigate(-1);
+    else navigate({ search: "" }, { replace: true, preventScrollReset: true });
+  }, [openId, location.state, navigate]);
 
   return (
     <>
       <GridOverlay />
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <TopNav active={navActive} onJump={jumpTo} />
-        <Hero onJump={jumpTo} />
-        <Marquee />
-        <WhatIBuild />
-        <SelectedSystems onOpen={setOpenSystem} />
-        <ObjectStudy />
-        <Process />
-        <Capabilities />
-        <WritingTeaser />
-        <Philosophy />
-        <About />
-        <Contact />
+      <div className="page">
+        <TopNav active={NAV_FOR_SECTION[active]} onJump={jumpTo} />
+        <main id="main" tabIndex={-1}>
+          <Hero onJump={jumpTo} paused={!!system} />
+          <Marquee />
+          <WhatIBuild />
+          <SelectedSystems onOpen={openSystem} />
+          <ObjectStudy paused={!!system} />
+          <Process />
+          <Capabilities />
+          <WritingTeaser />
+          <Philosophy />
+          <About />
+          <Contact />
+        </main>
         <Footer />
       </div>
 
-      <CaseStudyOverlay system={system} onClose={() => setOpenSystem(null)} />
+      <CaseStudyOverlay
+        system={system}
+        next={nextSystem !== system ? nextSystem : null}
+        onClose={closeSystem}
+        onOpen={openSystem}
+      />
     </>
   );
 }
 
-function Hero({ onJump }) {
-  const hero = SITE.hero || {};
+function Hero({ onJump, paused }) {
+  const hero = SITE.hero;
   const rawHeadline = hero.headline || "End-to-end AI Engineer &";
   const rawAccent = hero.headlineAccent || "Solutions Architect";
   // a trailing "&" reads better leading the serif line than orphaned in caps
@@ -208,156 +262,99 @@ function Hero({ onJump }) {
   const headline = rawHeadline.replace(/\s*&\s*$/, "");
   const headlineAccent = endsWithAmp ? `& ${rawAccent}` : rawAccent;
   const kicker = hero.kicker || "AI Engineer · Solutions Architect · End-to-end";
-  const subhead = hero.subhead || "";
+
+  const jump = (id) => (e) => {
+    e.preventDefault();
+    onJump(id);
+  };
 
   return (
-    <section
-      id="hero"
-      data-screen-label="hero"
-      style={{
-        minHeight: "100svh",
-        padding: "150px var(--pad-x) 96px",
-        position: "relative",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        className="wrap grid-2"
-        style={{
-          width: "100%",
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.25fr) minmax(0, 1fr)",
-          gap: 56,
-          alignItems: "center",
-        }}
-      >
+    <section id="hero" data-screen-label="hero" className="hero" tabIndex={-1}>
+      <div className="wrap hero-grid">
         <div>
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 30,
-              animation: "fadeIn 1s var(--ease) both",
-            }}
+            className="hero-fade hero-fade--still"
+            style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 30 }}
           >
-            <span style={{ width: 30, height: 1, background: "var(--accent)" }} />
-            <MonoLabel>{kicker}</MonoLabel>
+            <span
+              aria-hidden="true"
+              style={{ width: 30, height: 1, background: "var(--accent)", flexShrink: 0 }}
+            />
+            <MonoLabel as="p">{kicker}</MonoLabel>
           </div>
 
-          <h1
-            style={{
-              margin: 0,
-              fontSize: "clamp(42px, 5.6vw, 92px)",
-            }}
-          >
+          <h1 style={{ margin: 0, fontSize: "clamp(40px, 5.6vw, 92px)" }}>
             <span className="hero-line t-display" style={{ lineHeight: 0.95 }}>
               <span>{headline}</span>
             </span>
             <span
               className="hero-line t-serif"
-              style={{
-                lineHeight: 1.02,
-                color: "var(--accent)",
-                fontSize: "1.02em",
-              }}
+              style={{ lineHeight: 1.02, color: "var(--accent)", fontSize: "1.02em" }}
             >
               <span>{headlineAccent}.</span>
             </span>
           </h1>
 
-          <p
-            className="t-body"
-            style={{
-              marginTop: 34,
-              marginBottom: 0,
-              maxWidth: 560,
-              fontSize: 17.5,
-              animation: "fadeUp 0.9s var(--ease) 0.35s both",
-            }}
-          >
-            {linkifyTwyn(subhead)}
-          </p>
+          {hero.subhead && (
+            <p
+              className="t-body hero-fade"
+              style={{ "--delay": "200ms", marginTop: 34, marginBottom: 0, maxWidth: 560, fontSize: 17.5 }}
+            >
+              {linkifyTwyn(hero.subhead)}
+            </p>
+          )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              marginTop: 42,
-              flexWrap: "wrap",
-              animation: "fadeUp 1s var(--ease) 0.45s both",
-            }}
-          >
-            <button onClick={() => onJump("systems")} className="btn btn--primary">
-              <span>View Selected Systems</span>
-              <span className="btn-arrow">→</span>
-            </button>
-            <button onClick={() => onJump("process")} className="btn">
-              <span>Explore My Process</span>
-            </button>
-            <Link to="/writing" className="btn">
-              <span>Notes from the Floor</span>
-              <span className="btn-arrow" style={{ color: "var(--accent)" }}>
-                →
-              </span>
-            </Link>
+          <div className="cta-row hero-fade" style={{ "--delay": "280ms" }}>
+            <a href="#systems" onClick={jump("systems")} className="btn btn--primary">
+              <span>View selected systems</span>
+              <span className="btn-arrow" aria-hidden="true">→</span>
+            </a>
+            <a href="#process" onClick={jump("process")} className="btn">
+              <span>Explore my process</span>
+            </a>
           </div>
+          <p className="hero-fade" style={{ "--delay": "340ms", margin: "22px 0 0" }}>
+            <Link to="/writing" className="text-link">
+              Or read the notes from the floor
+              <span className="arrow" aria-hidden="true">→</span>
+            </Link>
+          </p>
         </div>
 
         <div
-          className="hero-side"
+          className="hero-side hero-fade hero-fade--still"
           style={{
+            "--delay": "200ms",
+            animationDuration: "0.8s",
             position: "relative",
             justifySelf: "end",
             width: "100%",
             display: "flex",
             justifyContent: "flex-end",
-            animation: "fadeIn 1.6s var(--ease) 0.3s both",
           }}
         >
-          <SystemCube3D ambientMotion />
+          <SystemCube3D ambientMotion paused={paused} />
         </div>
       </div>
 
-      <div
-        className="hero-meta"
-        style={{
-          position: "absolute",
-          left: "var(--pad-x)",
-          bottom: 26,
-          display: "flex",
-          gap: 36,
-          alignItems: "center",
-        }}
-      >
+      <div className="hero-meta-left" aria-hidden="true">
         <div className="scroll-hint" style={{ display: "inline-flex" }}>
           <MonoLabel>Scroll ↓</MonoLabel>
         </div>
         <div style={{ width: 80, height: 1, background: "var(--line-2)" }} />
       </div>
-      <div
-        className="hero-meta"
-        style={{
-          position: "absolute",
-          right: "var(--pad-x)",
-          bottom: 26,
-          width: 280,
-        }}
-      >
-        <Telemetry />
+      <div className="hero-meta-right">
+        <Telemetry status={SITE.about.status ? SITE.about.status.split("&")[0].trim() : undefined} />
       </div>
     </section>
   );
 }
 
-function Marquee() {
-  const items = SITE.hero?.whatIDo || [];
+const Marquee = memo(function Marquee() {
+  const items = SITE.hero.whatIDo;
   if (!items.length) return null;
   const track = (
-    <div className="marquee-track" aria-hidden>
+    <div className="marquee-track" aria-hidden="true">
       {[...items, ...items].map((d, i) => (
         <span key={i} className="marquee-item">
           {d}
@@ -366,132 +363,122 @@ function Marquee() {
     </div>
   );
   return (
-    <div className="marquee" aria-label={items.join(", ")}>
+    <div className="marquee">
+      <ul className="sr-only" aria-label="What I do">
+        {items.map((d) => (
+          <li key={d}>{d}</li>
+        ))}
+      </ul>
       {track}
       {track}
     </div>
   );
-}
+});
 
-function WhatIBuild() {
+const WhatIBuild = memo(function WhatIBuild() {
   return (
     <Section id="build" num={1} tab="What I Build">
       <SectionHead
         title="AI systems that ship to production."
         lead="Each card maps to systems shipped in the last two years — not a service line. Real-time CV running on a live automotive floor, voice copilots in three enterprise plants, a full-stack factory ops platform, and a consumer health app shipped end-to-end as a single engineer."
       />
-      <div
-        className="grid-4"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0,1fr))",
-          gap: 1,
-          border: "1px solid var(--line)",
-          background: "var(--line)",
-        }}
-      >
+      <ul className="grid-cards grid-cards--4" style={{ margin: 0, padding: 0, listStyle: "none" }}>
         {CAPABILITY_CARDS.map((c, i) => (
-          <Reveal key={c.code} delay={i * 80}>
+          <Reveal as="li" key={c.code} delay={i * 60}>
             <div className="cap-card">
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <span className="cap-num">{c.code}</span>
-                  <span
-                    style={{ width: 7, height: 7, background: "var(--accent)" }}
-                  />
+                <div className="cap-card-head">
+                  <span className="cap-num t-outline-num" aria-hidden="true">
+                    {c.code}
+                  </span>
+                  <span className="cap-card-dot" aria-hidden="true" />
                 </div>
-                <h3
-                  style={{
-                    margin: "32px 0 14px",
-                    fontFamily: "var(--font-display)",
-                    fontStretch: "112%",
-                    fontWeight: 660,
-                    textTransform: "uppercase",
-                    fontSize: 19,
-                    letterSpacing: "0.005em",
-                    lineHeight: 1.15,
-                  }}
-                >
-                  {c.title}
-                </h3>
-                <p
-                  className="t-body"
-                  style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}
-                >
+                <h3 className="t-caps cap-title">{c.title}</h3>
+                <p className="t-body" style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}>
                   {c.body}
                 </p>
               </div>
-              <div style={{ marginTop: 28, opacity: 0.85 }}>
+              <div className="cap-glyph">
                 <ModuleGlyph kind={c.glyph} />
               </div>
             </div>
           </Reveal>
         ))}
-      </div>
+      </ul>
     </Section>
   );
-}
+});
 
-function SelectedSystems({ onOpen }) {
+const SelectedSystems = memo(function SelectedSystems({ onOpen }) {
+  const n = SYSTEMS.length;
   return (
     <Section id="systems" num={2} tab="Selected Systems">
       <SectionHead
-        title="Four systems, shipped & running."
+        title={`${numberWord(n)} ${n === 1 ? "system" : "systems"}, shipped & running.`}
         lead="Two from my work at Twyn (described at the level of detail my client agreement allows), and two personal projects shown in full. Real numbers — 97–98% live accuracy, 99% object counting, 3 enterprise clients, 6-week first deploy — are noted where they belong."
       />
 
-      <div>
-        {SYSTEMS.map((s, i) => (
-          <Reveal key={s.id} delay={40}>
-            <button className="sys-row" onClick={() => onOpen(s.id)}>
-              <span className="sys-num">{String(i + 1).padStart(2, "0")}</span>
-              <span style={{ minWidth: 0 }}>
-                <h3 className="sys-name">{s.name}</h3>
-                <span
-                  className="t-label"
-                  style={{ letterSpacing: "0.1em", color: "var(--ink-3)" }}
-                >
-                  {s.domain} · {linkifyTwyn(s.timeline)}
+      <ol className="sys-list" style={{ margin: 0, padding: 0, listStyle: "none" }}>
+        {SYSTEMS.map((s, i) => {
+          const descId = `sys-desc-${s.id}`;
+          return (
+            <Reveal as="li" key={s.id}>
+              <article className="sys-row">
+                <span className="sys-num t-outline-num" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-              </span>
-              <span
-                className="sys-desc t-body"
-                style={{ fontSize: 14.5, lineHeight: 1.55, paddingRight: 56 }}
-              >
-                {linkifyTwyn(s.short)}
-              </span>
-              <span className="sys-fig">
-                <SystemPreviewMotif kind={s.motif} color={s.palette} />
-                <span
-                  className="plate-caption"
-                  style={{ left: 12, top: 10 }}
-                >
-                  <span>FIG.{String(i + 1).padStart(2, "0")}</span>
-                  <span>{s.motif}</span>
+                <div style={{ minWidth: 0 }}>
+                  <h3 className="sys-name">
+                    <button
+                      type="button"
+                      className="sys-link"
+                      onClick={() => onOpen(s.id)}
+                      aria-describedby={descId}
+                      aria-haspopup="dialog"
+                    >
+                      {s.name}
+                    </button>
+                  </h3>
+                  <span className="t-label sys-meta">
+                    {[s.domain, s.timeline].filter(Boolean).join(" · ")}
+                  </span>
+                  <span className="sys-open" aria-hidden="true">
+                    Open drawing <span className="arrow">→</span>
+                  </span>
+                </div>
+                <p id={descId} className="sys-desc t-body" style={{ margin: 0 }}>
+                  {s.short}
+                </p>
+                <span className="sys-fig" aria-hidden="true">
+                  <SystemPreviewMotif kind={s.motif} color={s.palette} />
+                  <span
+                    className="plate-caption plate-caption--chip"
+                    style={{ left: 10, top: 10 }}
+                  >
+                    <span>
+                      Fig.{String(i + 1).padStart(2, "0")} · {s.motif}
+                    </span>
+                  </span>
+                  <span
+                    className="plate-caption plate-caption--chip"
+                    style={{ right: 10, bottom: 10 }}
+                  >
+                    <span>
+                      <span className="swatch" style={{ background: s.palette }} />
+                      Client work — abstracted
+                    </span>
+                  </span>
                 </span>
-                <span
-                  className="plate-caption"
-                  style={{ right: 12, bottom: 10, color: s.palette }}
-                >
-                  CLIENT WORK — ABSTRACTED
-                </span>
-              </span>
-              <span className="sys-open">OPEN →</span>
-            </button>
-          </Reveal>
-        ))}
-      </div>
+              </article>
+            </Reveal>
+          );
+        })}
+      </ol>
     </Section>
   );
-}
+});
 
-function ObjectStudy() {
+const ObjectStudy = memo(function ObjectStudy({ paused }) {
   return (
     <Section id="object-study" num={3} tab="Object Study">
       <div
@@ -504,23 +491,17 @@ function ObjectStudy() {
         }}
       >
         <div>
-          <h2
-            className="t-display"
-            style={{ margin: 0, fontSize: "clamp(36px, 4.2vw, 62px)" }}
-          >
+          <h2 className="t-display section-title">
             How I think
             <br />
-            about{" "}
-            <span className="serif" style={{ color: "var(--blue)" }}>
-              an AI system.
-            </span>
+            about <span className="serif accent">an AI system.</span>
           </h2>
           <p className="t-body" style={{ marginTop: 28, maxWidth: 460 }}>
             Most production AI projects break at the seams between layers — not
             inside the model. Before I write code, I map the whole topology:
             where data enters, where it transforms, where the model fits, where
-            a human takes over, and where the feedback closes the loop. Move
-            your cursor to inspect.
+            a human takes over, and where the feedback closes the loop.
+            <span className="hover-only"> Move your cursor over the drawing to tilt it.</span>
           </p>
 
           <dl style={{ margin: "36px 0 0", maxWidth: 420 }}>
@@ -528,7 +509,7 @@ function ObjectStudy() {
               ["Figure", "02 · system flow"],
               ["Stages", "data → model → human"],
               ["Return", "feedback · retraining queue"],
-              ["Drawn", "in code · cursor-reactive"],
+              ["Drawn", "in code · live"],
             ].map(([k, v]) => (
               <div key={k} className="spec">
                 <dt>{k}</dt>
@@ -538,38 +519,42 @@ function ObjectStudy() {
           </dl>
         </div>
 
-        <div className="plate plate--graph">
-          <div className="plate-caption" style={{ left: 16, top: 14 }}>
+        <figure className="plate plate--graph plate--interactive" style={{ margin: 0 }}>
+          <div
+            className="plate-caption"
+            style={{ left: 16, top: 14 }}
+            aria-hidden="true"
+          >
             <span>Fig. 02</span>
             <span>System Flow</span>
             <span style={{ color: "var(--blue)" }}>● live</span>
           </div>
-          <div className="plate-caption" style={{ right: 16, top: 14 }}>
+          <div
+            className="plate-caption flow-caption-secondary"
+            style={{ right: 16, top: 14 }}
+            aria-hidden="true"
+          >
             Projection · 30° tilt
           </div>
 
-          <SystemFlow3D ambientMotion accent="var(--blue)" />
+          <SystemFlow3D ambientMotion accent="var(--blue)" paused={paused} />
 
           <div
-            className="plate-caption"
-            style={{
-              left: 16,
-              bottom: 14,
-              right: 16,
-              justifyContent: "space-between",
-            }}
+            className="plate-caption flow-caption-secondary"
+            style={{ left: 16, bottom: 14, right: 16, justifyContent: "space-between" }}
+            aria-hidden="true"
           >
             <span>closed loop · human-in-the-loop</span>
             <span>dots ≈ live data</span>
-            <span>cursor → tilt</span>
+            <span className="hover-only">cursor → tilt</span>
           </div>
-        </div>
+        </figure>
       </div>
     </Section>
   );
-}
+});
 
-function Process() {
+const Process = memo(function Process() {
   return (
     <Section id="process" num={4} tab="How I Work">
       <SectionHead
@@ -577,118 +562,36 @@ function Process() {
         lead="I start by mapping how work actually happens — people, processes, data, decisions, bottlenecks. Then I identify where AI creates leverage and engineer the system around it."
       />
 
-      <div>
-        {PROCESS_STEPS.map((s, i) => (
-          <Reveal key={s.code} delay={i * 60}>
+      <ol className="process-list" style={{ margin: 0, padding: 0, listStyle: "none" }}>
+        {PROCESS_STEPS.map((s) => (
+          <Reveal as="li" key={s.code}>
             <div className="process-row">
-              <span className="process-num">{s.code}</span>
-              <h3
-                style={{
-                  margin: 0,
-                  fontFamily: "var(--font-display)",
-                  fontStretch: "114%",
-                  fontWeight: 680,
-                  textTransform: "uppercase",
-                  fontSize: "clamp(20px, 2.2vw, 30px)",
-                  letterSpacing: "-0.005em",
-                  lineHeight: 1.05,
-                  paddingTop: 6,
-                }}
-              >
-                {s.title}
-              </h3>
+              <span className="process-num t-outline-num" aria-hidden="true">
+                {s.code}
+              </span>
+              <h3 className="t-caps process-title">{s.title}</h3>
               <div className="process-body">
                 <p className="t-body" style={{ margin: 0, fontSize: 15.5 }}>
                   {s.body}
                 </p>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "6px 8px",
-                    marginTop: 16,
-                  }}
-                >
+                <ul className="process-tags" aria-label="Outputs">
                   {s.detail.map((d) => (
-                    <span key={d} className="stamp">
+                    <li key={d} className="stamp">
                       {d}
-                    </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             </div>
           </Reveal>
         ))}
-      </div>
-
-      <div
-        style={{
-          marginTop: 72,
-          border: "1px solid var(--line-2)",
-          padding: "30px 28px 34px",
-          background: "var(--paper-1)",
-          position: "relative",
-        }}
-      >
-        <MonoLabel>Fig. 03 / System Flow — continuous loop</MonoLabel>
-        <div
-          className="grid-4"
-          style={{
-            marginTop: 24,
-            display: "grid",
-            gridTemplateColumns: "repeat(6, minmax(0,1fr))",
-            gap: 10,
-            alignItems: "center",
-          }}
-        >
-          {[
-            "Workflow",
-            "Data",
-            "AI Layer",
-            "Product Interface",
-            "Decision",
-            "Feedback Loop",
-          ].map((n, i) => (
-            <div
-              key={n}
-              style={{
-                padding: "16px 12px",
-                border:
-                  i === 2
-                    ? "1px solid var(--accent)"
-                    : "1px solid var(--line-2)",
-                background: i === 2 ? "var(--accent-soft)" : "var(--paper-0)",
-                color: i === 2 ? "var(--accent)" : "var(--ink)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 11.5,
-                textAlign: "center",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
-              {n}
-            </div>
-          ))}
-        </div>
-        <div
-          style={{
-            marginTop: 12,
-            color: "var(--ink-3)",
-            fontFamily: "var(--font-mono)",
-            fontSize: 10,
-            letterSpacing: "0.2em",
-            textAlign: "center",
-          }}
-        >
-          ← · · · · · · · · · · · · · · · FEEDBACK RETURNS · · · · · · · · · ·
-          · · · · →
-        </div>
-      </div>
+      </ol>
     </Section>
   );
-}
+});
 
-function Capabilities() {
+const Capabilities = memo(function Capabilities() {
+  if (!CAPS.length) return null;
   return (
     <Section id="capabilities" num={5} tab="Technical Capabilities">
       <SectionHead
@@ -696,129 +599,77 @@ function Capabilities() {
         lead="Grouped by where each piece sits in a real system. Solutions architecture sets the strategy. The AI / ML / voice layer builds the intelligence. The product layer ships the interface. The backend carries everything underneath."
       />
 
-      <div>
-        {CAPS.map((L, i) => (
-          <Reveal key={L.layer} delay={i * 60}>
+      <div className="caps-list">
+        {CAPS.map((L) => (
+          <Reveal key={L.layer + L.name}>
             <div className="caps-row">
               <div>
-                <div
-                  className="t-label"
-                  style={{ color: "var(--accent)", letterSpacing: "0.2em" }}
-                >
-                  Layer · {L.layer}
-                </div>
-                <div
-                  style={{
-                    marginTop: 12,
-                    fontFamily: "var(--font-display)",
-                    fontStretch: "114%",
-                    fontWeight: 680,
-                    textTransform: "uppercase",
-                    fontSize: 22,
-                    lineHeight: 1.05,
-                    letterSpacing: "-0.005em",
-                  }}
-                >
-                  {L.name}
-                </div>
-                <div
-                  className="t-label"
-                  style={{ marginTop: 14, display: "block" }}
-                >
-                  {String(L.items.length).padStart(2, "0")} entries
+                <div className="t-label caps-layer">Layer · {L.layer}</div>
+                <h3 className="t-caps caps-name">{L.name}</h3>
+                <div className="t-label" style={{ marginTop: 14 }}>
+                  {countLabel(L.items.length, "entry", "entries")}
                 </div>
               </div>
-              <p className="caps-items">
-                {L.items.map((it, k) => (
-                  <span key={it}>
-                    <b>{it}</b>
-                    {k < L.items.length - 1 && (
-                      <span className="caps-sep">/</span>
-                    )}
-                  </span>
+              {/* real spaces between items give the line somewhere to break;
+                  short items never split across lines */}
+              <ul className="caps-items" aria-label={L.name}>
+                {L.items.map((it) => (
+                  <Fragment key={it}>
+                    <li className={it.length <= 26 ? "nw" : undefined}>{it}</li>{" "}
+                  </Fragment>
                 ))}
-              </p>
+              </ul>
             </div>
           </Reveal>
         ))}
       </div>
     </Section>
   );
-}
+});
 
-function WritingTeaser() {
+const WritingTeaser = memo(function WritingTeaser() {
+  if (!RECENT_POSTS.length) return null;
+  const latest = ALL_POSTS[0]?.date;
   return (
     <Section id="notes" num={6} tab="From the Notes">
       <SectionHead
         title="Written between deployments."
         lead="Essays, field notes, and lab entries from shipping production AI — the longer version of how I think about the work, and a deeper look at what sits behind each case study."
       />
-      <div
-        className="grid-3"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0,1fr))",
-          gap: 1,
-          border: "1px solid var(--line)",
-          background: "var(--line)",
-        }}
+      <ul
+        className="grid-cards grid-cards--3"
+        style={{ margin: 0, padding: 0, listStyle: "none", "--cols": RECENT_POSTS.length }}
       >
         {RECENT_POSTS.map((n, i) => (
-          <Reveal key={n.id} delay={i * 80}>
-            <Link to={`/writing#${n.id}`} className="note-card">
+          <Reveal as="li" key={n.id} delay={i * 60}>
+            <article className="note-card">
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <span className="stamp">
-                    {KIND_META[n.kind]?.tag || String(n.kind || "").toUpperCase()}
-                  </span>
-                  <span
-                    className="t-label"
-                    style={{ letterSpacing: "0.1em" }}
-                  >
-                    {n.date} · {n.read}
+                <div className="note-card-meta">
+                  <span className="stamp">{KIND_META[n.kind].tag}</span>
+                  <span className="t-label" style={{ letterSpacing: "0.1em" }}>
+                    {[n.date, n.read].filter(Boolean).join(" · ")}
                   </span>
                 </div>
-                <h3
-                  style={{
-                    margin: "26px 0 14px",
-                    fontFamily: "var(--font-display)",
-                    fontStretch: "110%",
-                    fontWeight: 650,
-                    fontSize: 21,
-                    letterSpacing: "-0.01em",
-                    lineHeight: 1.18,
-                    color: "var(--ink)",
-                    textWrap: "balance",
-                  }}
-                >
-                  {n.title}
+                <h3 className="t-title note-card-title">
+                  <Link
+                    to={`/writing/${n.id}`}
+                    state={{ fromApp: true }}
+                    className="stretched-link"
+                  >
+                    {n.title}
+                  </Link>
                 </h3>
                 <p className="t-body" style={{ margin: 0, fontSize: 14 }}>
                   {n.dek}
                 </p>
               </div>
-              <div
-                style={{
-                  marginTop: 26,
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  color: "var(--accent)",
-                  letterSpacing: "0.16em",
-                }}
-              >
-                READ <span className="note-card-arrow">→</span>
+              <div className="read-cue" aria-hidden="true">
+                Read <span className="arrow">→</span>
               </div>
-            </Link>
+            </article>
           </Reveal>
         ))}
-      </div>
+      </ul>
 
       <div
         style={{
@@ -830,289 +681,239 @@ function WritingTeaser() {
           flexWrap: "wrap",
         }}
       >
-        <div className="t-label">
-          {String(ALL_POSTS.length).padStart(2, "0")} entries · updated monthly
-        </div>
+        <p className="t-label" style={{ margin: 0 }}>
+          {countLabel(ALL_POSTS.length, "entry", "entries")}
+          {latest && ` · latest ${latest}`}
+        </p>
         <Link to="/writing" className="btn">
           <span>Read all notes</span>
-          <span className="btn-arrow" style={{ color: "var(--accent)" }}>
+          <span className="btn-arrow accent-text" aria-hidden="true">
             →
           </span>
         </Link>
       </div>
     </Section>
   );
-}
+});
 
-function Philosophy() {
-  const p = SITE.philosophy || {};
+const Philosophy = memo(function Philosophy() {
+  const p = SITE.philosophy;
   const headline = p.headline || "Anyone can build the demo.";
-  const headlineAccent =
-    p.headlineAccent || "I build what runs on Monday morning.";
-  const body = p.body || "";
-  const principles = p.principles || "";
+  const headlineAccent = p.headlineAccent || "I build what runs on Monday morning.";
 
   return (
-    <Section
-      id="philosophy"
-      num={7}
-      tab="Belief"
-      plate
-      style={{ paddingTop: 150, paddingBottom: 150 }}
-    >
-      <h2
-        style={{
-          margin: 0,
-          maxWidth: 1320,
-          fontSize: "clamp(44px, 6.6vw, 116px)",
-        }}
-      >
-        <span
-          className="t-display"
-          style={{ display: "block", color: "var(--plate-text)" }}
-        >
+    <Section id="philosophy" num={7} tab="Belief" plate>
+      <h2 style={{ margin: 0, maxWidth: 1320, fontSize: "clamp(40px, 6.6vw, 116px)" }}>
+        <span className="t-display" style={{ display: "block", color: "var(--plate-text)" }}>
           {headline}
         </span>
         <span
           className="t-serif"
           style={{
             display: "block",
-            color: "var(--accent)",
+            color: "var(--accent-on-dark)",
             lineHeight: 1.04,
             fontSize: "0.92em",
             marginTop: 10,
+            textWrap: "balance",
           }}
         >
           {headlineAccent}
         </span>
       </h2>
 
-      <div
-        className="grid-2"
-        style={{
-          marginTop: 64,
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 0.95fr)",
-          gap: 80,
-          alignItems: "start",
-        }}
-      >
-        <p
+      {(p.body || p.principles) && (
+        <div
+          className="grid-2"
           style={{
-            margin: 0,
-            color: "var(--plate-text)",
-            fontSize: 21,
-            lineHeight: 1.5,
-            letterSpacing: "-0.01em",
-            textWrap: "pretty",
-            maxWidth: 620,
+            marginTop: 64,
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 0.95fr)",
+            gap: "40px 80px",
+            alignItems: "start",
           }}
         >
-          {linkifyTwyn(body)}
-        </p>
-        <div>
-          <div
-            className="t-label"
-            style={{ color: "var(--plate-text-2)", marginBottom: 16 }}
-          >
-            Working principles
-          </div>
           <p
             style={{
               margin: 0,
-              color: "var(--plate-text-2)",
-              fontSize: 15.5,
-              lineHeight: 1.65,
+              color: "var(--plate-text)",
+              fontSize: "clamp(18px, 1.6vw, 21px)",
+              lineHeight: 1.5,
+              letterSpacing: "-0.01em",
               textWrap: "pretty",
+              maxWidth: 620,
             }}
           >
-            {linkifyTwyn(principles)}
+            {linkifyTwyn(p.body)}
           </p>
-        </div>
-      </div>
-
-      <div
-        className="grid-4"
-        style={{
-          marginTop: 96,
-          borderTop: "1px solid var(--plate-line)",
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0,1fr))",
-        }}
-      >
-        {BELIEFS.map((b, i) => (
-          <Reveal key={b.code} delay={i * 70}>
-            <div
-              style={{
-                padding: "30px 26px 36px",
-                borderRight:
-                  i < BELIEFS.length - 1
-                    ? "1px solid var(--plate-line)"
-                    : "none",
-                display: "flex",
-                flexDirection: "column",
-                gap: 30,
-                minHeight: 200,
-                height: "100%",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 10.5,
-                  color: "var(--accent)",
-                  letterSpacing: "0.2em",
-                }}
-              >
-                BELIEF · {b.code}
-              </span>
+          {p.principles && (
+            <div>
+              <h3 className="t-label" style={{ color: "var(--plate-text-2)", margin: "0 0 16px", fontWeight: 400 }}>
+                Working principles
+              </h3>
               <p
                 style={{
                   margin: 0,
-                  fontSize: 19,
-                  lineHeight: 1.3,
-                  color: "var(--plate-text)",
-                  letterSpacing: "-0.01em",
-                  textWrap: "balance",
+                  color: "var(--plate-text-2)",
+                  fontSize: 15.5,
+                  lineHeight: 1.65,
+                  textWrap: "pretty",
                 }}
               >
-                {b.line}
+                {linkifyTwyn(p.principles)}
               </p>
             </div>
-          </Reveal>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
+
+      {BELIEFS.length > 0 && (
+        <ol className="belief-grid">
+          {BELIEFS.map((b, i) => (
+            <Reveal as="li" key={b.code + i} delay={i * 60}>
+              <div className="belief-cell">
+                <span className="belief-code">BELIEF · {b.code}</span>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 19,
+                    lineHeight: 1.3,
+                    color: "var(--plate-text)",
+                    letterSpacing: "-0.01em",
+                    textWrap: "balance",
+                  }}
+                >
+                  {b.line}
+                </p>
+              </div>
+            </Reveal>
+          ))}
+        </ol>
+      )}
     </Section>
   );
-}
+});
 
-function About() {
-  const about = SITE.about || {};
+const About = memo(function About() {
+  const about = SITE.about;
+  const facts = [
+    ["Focus", about.focus],
+    ["Based", about.based],
+    ["Working with", about.workingWith],
+    ["Status", about.status],
+  ].filter(([, v]) => v);
+
   return (
     <Section id="about" num={8} tab="About">
       <SectionHead title="Engineer of record." />
-      <div
-        className="grid-2"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.05fr 1fr",
-          gap: 64,
-          alignItems: "start",
-        }}
-      >
+      <div className="about-grid">
         <div>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 18,
-              lineHeight: 1.65,
-              color: "var(--ink)",
-              textWrap: "pretty",
-            }}
-          >
-            {linkifyTwyn(about.intro)}
-          </p>
-          <p className="t-body" style={{ marginTop: 22, fontSize: 16.5 }}>
-            {linkifyTwyn(about.bio)}
-          </p>
-
-          <dl style={{ margin: "44px 0 0" }}>
-            {[
-              ["Focus", about.focus],
-              ["Based", about.based],
-              ["Working with", about.workingWith],
-              ["Status", about.status],
-            ].map(([k, v]) => (
-              <div key={k} className="spec">
-                <dt>{k}</dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-
-        <div className="plate">
-          <div
-            style={{
-              aspectRatio: "1 / 1.15",
-              background:
-                "repeating-linear-gradient(135deg, rgba(28,26,19,0.03) 0 1px, transparent 1px 12px), var(--paper-2)",
-              position: "relative",
-              display: "grid",
-              placeItems: "center",
-            }}
-          >
-            <div className="t-label" style={{ letterSpacing: "0.2em" }}>
-              [ Portrait — to follow ]
-            </div>
-            <div className="plate-caption" style={{ left: 14, top: 12 }}>
-              Operator · G.G — 001
-            </div>
-            <div
-              className="plate-caption"
-              style={{ right: 14, top: 12, color: "var(--accent)" }}
-            >
-              <span className="pulse-dot">●</span> on site
-            </div>
-            <div
-              className="plate-caption"
+          {about.intro && (
+            <p
               style={{
-                left: 14,
-                bottom: 12,
-                right: 14,
-                justifyContent: "space-between",
+                margin: 0,
+                fontSize: 18,
+                lineHeight: 1.65,
+                color: "var(--ink)",
+                textWrap: "pretty",
               }}
             >
-              <span>New Delhi · IN</span>
-              <span>Aspect 1:1.15</span>
+              {linkifyTwyn(about.intro)}
+            </p>
+          )}
+          {about.bio && (
+            <p className="t-body" style={{ marginTop: 22, fontSize: 16.5 }}>
+              {linkifyTwyn(about.bio)}
+            </p>
+          )}
+
+          {facts.length > 0 && (
+            <dl style={{ margin: "44px 0 0" }}>
+              {facts.map(([k, v]) => (
+                <div key={k} className="spec">
+                  <dt>{k}</dt>
+                  <dd>{v}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+
+        <figure className="plate" style={{ margin: 0 }}>
+          <div className="portrait-frame">
+            {about.portrait ? (
+              <img
+                src={about.portrait}
+                alt={about.portraitAlt || "Portrait of Gautam Girdhar"}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span className="monogram" aria-hidden="true">
+                GG<span>.</span>
+              </span>
+            )}
+            <div
+              className="plate-caption plate-caption--chip"
+              style={{ left: 14, top: 12 }}
+              aria-hidden="true"
+            >
+              <span>Operator · G.G — 001</span>
+            </div>
+            <div
+              className="plate-caption plate-caption--chip"
+              style={{ right: 14, top: 12, color: "var(--accent-text)" }}
+              aria-hidden="true"
+            >
+              <span>
+                <span className="pulse-dot">●</span> on site
+              </span>
+            </div>
+            <div
+              className="plate-caption plate-caption--chip"
+              style={{ left: 14, bottom: 12 }}
+              aria-hidden="true"
+            >
+              <span>{about.based || "New Delhi · India"}</span>
             </div>
           </div>
-          <div
-            style={{
-              borderTop: "1px solid var(--line-2)",
-              padding: "14px 16px",
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-              fontFamily: "var(--font-mono)",
-              fontSize: 10.5,
-              color: "var(--ink-2)",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-            }}
-          >
+          <figcaption className="plate-foot">
             <span>Name · Gautam Girdhar</span>
-            <span>Role · Applied AI / Sys</span>
-          </div>
-        </div>
+            <span>Role · Applied AI / Systems</span>
+          </figcaption>
+        </figure>
       </div>
     </Section>
   );
-}
+});
 
-function Contact() {
-  const c = SITE.contact || {};
-  const linkedinDisplay = (c.linkedin || "").replace(/^https?:\/\/(www\.)?/, "");
-  const githubDisplay = (c.github || "").replace(/^https?:\/\/(www\.)?/, "");
+const Contact = memo(function Contact() {
+  const c = SITE.contact;
+  const display = (url) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
   const rows = [
-    { label: "Email", value: c.email, href: c.email ? `mailto:${c.email}` : "#" },
-    { label: "LinkedIn", value: linkedinDisplay, href: c.linkedin || "#" },
-    { label: "GitHub", value: githubDisplay, href: c.github || "#" },
+    { label: "Email", value: c.email, href: c.email && `mailto:${c.email}` },
+    {
+      label: "LinkedIn",
+      value: c.linkedin && display(c.linkedin),
+      href: externalHref(c.linkedin),
+      external: true,
+    },
+    {
+      label: "GitHub",
+      value: c.github && display(c.github),
+      href: externalHref(c.github),
+      external: true,
+    },
     {
       label: "Phone",
       value: c.phone,
-      href: c.phone ? `tel:${String(c.phone).replace(/[^\d+]/g, "")}` : "#",
+      href: c.phone && `tel:${c.phone.replace(/[^\d+]/g, "")}`,
     },
-  ];
+  ].filter((r) => r.value && r.href);
+
   return (
     <Section id="contact" num={9} tab="Contact" style={{ paddingBottom: 110 }}>
-      <h2
-        style={{
-          margin: 0,
-          maxWidth: 1240,
-          fontSize: "clamp(42px, 6.6vw, 110px)",
-        }}
-      >
+      <h2 style={{ margin: 0, maxWidth: 1240, fontSize: "clamp(40px, 6.6vw, 110px)" }}>
         <span className="t-display" style={{ display: "block" }}>
           Let’s build systems
         </span>
@@ -1130,21 +931,30 @@ function Contact() {
         </span>
       </h2>
 
-      <div style={{ marginTop: 64 }}>
-        {rows.map((r) => (
-          <a
-            key={r.label}
-            href={r.href}
-            className="contact-row"
-            target={r.href.startsWith("http") ? "_blank" : undefined}
-            rel={r.href.startsWith("http") ? "noreferrer" : undefined}
-          >
-            <span className="t-label contact-label">{r.label}</span>
-            <span className="contact-value">{r.value}</span>
-            <span className="contact-arrow">↗</span>
-          </a>
-        ))}
-      </div>
+      {rows.length > 0 && (
+        <ul className="contact-list">
+          {rows.map((r) => (
+            <li key={r.label}>
+              <a
+                href={r.href}
+                className="contact-row"
+                target={r.external ? "_blank" : undefined}
+                rel={r.external ? "noreferrer" : undefined}
+              >
+                <span className="t-label contact-label">{r.label}</span>
+                <span className="contact-value">
+                  <span className="sr-only">{r.label}: </span>
+                  {r.value}
+                  {r.external && <span className="sr-only"> (opens in a new tab)</span>}
+                </span>
+                <span className="contact-arrow" aria-hidden="true">
+                  ↗
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </Section>
   );
-}
+});
